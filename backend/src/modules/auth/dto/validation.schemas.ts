@@ -20,6 +20,10 @@ export const createUserByAdminSchemaJoi = Joi.object({
   roleId: Joi.number().integer().positive().required(),
 });
 
+export const refreshTokenSchemaJoi = Joi.object({
+  refresh_token: Joi.string().required(),
+});
+
 // Zod validation schemas
 export const registerSchemaZod = z
   .object({

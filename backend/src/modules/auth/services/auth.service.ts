@@ -6,17 +6,29 @@ import {
   DbUserRegistrationResult,
   DbUserSummary,
 } from "../types/auth.types";
+import { IAuthTokens } from "../interfaces/auth.interface";
+import { env } from "../../../config/env";
 import { sendEmail, generateRegistrationEmail } from "../../../shared/services/email.service";
 
 type AuthUserWithoutPassword = Omit<DbUser, "password">;
 
+const buildTokens = (user: {
+  id: number;
+  email: string;
+  role: string;
+}): { accessToken: string; refreshToken: string; expiresIn: number } => {
+  const payload = { id: user.id, email: user.email, role: user.role };
+  return {
+    accessToken: authUtils.generateAccessToken(payload),
+    refreshToken: authUtils.generateRefreshToken(payload),
+    expiresIn: env.jwt.accessExpiresInSeconds,
+  };
+};
+
 export const login = async (
   email: string,
   password: string
-): Promise<{
-  token: string;
-  user: AuthUserWithoutPassword;
-}> => {
+): Promise<IAuthTokens> => {
   // Find user by email
   const user = await authRepository.findByEmail(email);
 
@@ -42,8 +54,8 @@ export const login = async (
     throw new Error("Invalid credentials");
   }
 
-  // Generate token
-  const token = authUtils.generateToken({
+  // Generate access + refresh tokens
+  const tokens = buildTokens({
     id: user.id,
     email: user.email,
     role: user.role,
@@ -53,8 +65,43 @@ export const login = async (
   const { password: _, ...userWithoutPassword } = user;
 
   return {
-    token,
+    ...tokens,
     user: userWithoutPassword,
+  };
+};
+
+/**
+ * Exchange a valid refresh token for a fresh access/refresh token pair
+ * (refresh token rotation).
+ */
+export const refreshTokens = async (
+  refreshToken: string
+): Promise<IAuthTokens> => {
+  const payload = authUtils.verifyRefreshToken(refreshToken);
+
+  if (!payload) {
+    throw new Error("Invalid or expired refresh token");
+  }
+
+  // Re-load the user to ensure the account still exists and is active,
+  // and to pick up any role changes since the refresh token was issued.
+  const user = await authRepository.findById(payload.id);
+
+  if (!user || user.status !== "active") {
+    throw new Error("Invalid or expired refresh token");
+  }
+
+  const tokens = buildTokens({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
+
+  const { password: _, ...userWithoutPassword } = user;
+
+  return {
+    ...tokens,
+    user: userWithoutPassword as AuthUserWithoutPassword,
   };
 };
 

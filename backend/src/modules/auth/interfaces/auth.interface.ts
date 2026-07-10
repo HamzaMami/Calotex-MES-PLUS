@@ -15,11 +15,15 @@ export interface IJwtPayload {
 
 type AuthUserWithoutPassword = Omit<DbUser, "password">;
 
+export interface IAuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: AuthUserWithoutPassword;
+}
+
 export interface IAuthService {
-  login(email: string, password: string): Promise<{
-    token: string;
-    user: AuthUserWithoutPassword;
-  }>;
+  login(email: string, password: string): Promise<IAuthTokens>;
   register(
     name: string,
     email: string,

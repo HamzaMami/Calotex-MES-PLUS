@@ -133,7 +133,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return LoginResponseModel.fromJson(response.data as Map<String, dynamic>);
+        final responseData = response.data['data'] as Map<String, dynamic>? ??
+            response.data as Map<String, dynamic>;
+        return LoginResponseModel.fromJson(responseData);
       }
 
       throw ServerException(
@@ -153,12 +155,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> logout() async {
     try {
-      await _httpClient.dio.post(
-        ApiConstants.logoutEndpoint,
-        options: Options(
-          headers: {'Authorization': 'Bearer'},
-        ),
-      );
+      // The auth interceptor attaches the current access token automatically.
+      await _httpClient.dio.post(ApiConstants.logoutEndpoint);
     } on DioException catch (e) {
       _handleDioException(e);
     } catch (e) {

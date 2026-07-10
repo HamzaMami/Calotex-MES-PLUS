@@ -12,7 +12,7 @@ export const getAllItems = async (req: Request, res: Response) => {
 
 export const getItemById = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const item = await inventoryService.getItemById(id);
     if (!item) {
       return res.status(404).json({ status: "error", message: "Inventory item not found" });
@@ -34,7 +34,7 @@ export const createItem = async (req: Request, res: Response) => {
 
 export const updateItem = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const item = await inventoryService.updateItem(id, req.body);
     if (!item) {
       return res.status(404).json({ status: "error", message: "Inventory item not found" });
@@ -47,7 +47,7 @@ export const updateItem = async (req: Request, res: Response) => {
 
 export const deleteItem = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const success = await inventoryService.deleteItem(id);
     if (!success) {
       return res.status(404).json({ status: "error", message: "Inventory item not found" });

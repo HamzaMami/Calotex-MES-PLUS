@@ -7,6 +7,7 @@ import {
   createUserByAdminSchemaJoi,
   loginSchemaJoi,
   registerSchemaJoi,
+  refreshTokenSchemaJoi,
 } from "../dto/validation.schemas";
 
 const router = Router();
@@ -14,6 +15,7 @@ const router = Router();
 // Public routes
 router.post("/login", validateRequest(loginSchemaJoi), authController.login);
 router.post("/register", validateRequest(registerSchemaJoi), authController.register);
+router.post("/refresh", validateRequest(refreshTokenSchemaJoi), authController.refreshToken);
 router.post(
   "/complete-registration/:token",
   validateWithZod(completeRegistrationSchemaZod),
@@ -29,8 +31,7 @@ router.post(
   authController.createUserByAdmin
 );
 
-// Protected routes example (uncomment when needed)
-// router.get("/profile", authenticate, authController.getProfile);
-// router.post("/logout", authenticate, authController.logout);
+// Authenticated user routes
+router.post("/logout", authenticate, authController.logout);
 
 export default router;

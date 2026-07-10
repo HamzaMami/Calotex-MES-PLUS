@@ -1,11 +1,39 @@
-import dotenv from "dotenv";
-
-dotenv.config();
-
+import { env } from "./config/env";
 import app from "./app";
+import { verifyDatabaseConnection, closePool } from "./config/db";
 
-const PORT = process.env.PORT || 5000;
+async function bootstrap() {
+  // Fail fast if the database is unreachable at startup.
+  try {
+    await verifyDatabaseConnection();
+    console.log("[db] Database connection verified");
+  } catch (error) {
+    console.error("[db] Failed to connect to the database:", error);
+    process.exit(1);
+  }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  const server = app.listen(env.port, () => {
+    console.log(`Server is running on port ${env.port} (${env.nodeEnv})`);
+  });
+
+  // Graceful shutdown: stop accepting connections, then close the DB pool.
+  const shutdown = async (signal: string) => {
+    console.log(`\n[server] ${signal} received, shutting down gracefully...`);
+    server.close(async () => {
+      await closePool();
+      console.log("[server] Shutdown complete");
+      process.exit(0);
+    });
+
+    // Force-exit if graceful shutdown hangs.
+    setTimeout(() => {
+      console.error("[server] Forced shutdown after timeout");
+      process.exit(1);
+    }, 10_000).unref();
+  };
+
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+}
+
+bootstrap();

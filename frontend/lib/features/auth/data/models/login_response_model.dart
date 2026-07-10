@@ -69,11 +69,15 @@ class LoginResponseModel {
   }
 
   @override
-  String toString() => '''LoginResponseModel(
-    accessToken: ${accessToken.substring(0, 10)}...,
-    refreshToken: ${refreshToken.substring(0, 10)}...,
+  String toString() {
+    String mask(String token) =>
+        token.length > 10 ? '${token.substring(0, 10)}...' : '***';
+    return '''LoginResponseModel(
+    accessToken: ${mask(accessToken)},
+    refreshToken: ${mask(refreshToken)},
     expiresIn: $expiresIn,
     user: ${user.email},
     tokenType: $tokenType,
   )''';
+  }
 }

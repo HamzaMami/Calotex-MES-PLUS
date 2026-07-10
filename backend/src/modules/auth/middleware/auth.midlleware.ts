@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import Joi from "joi";
 import { ZodSchema, ZodError, z } from "zod"; 
 import { IJwtPayload } from "../interfaces/auth.interface";
+import { verifyAccessToken } from "../utils/auth.utils";
 
 // Custom interface to extend Express Request and avoid 'any'
 export interface AuthenticatedRequest extends Request {
@@ -25,7 +25,13 @@ export const authenticate = (
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as IJwtPayload;
+    const decoded = verifyAccessToken(token);
+
+    if (!decoded) {
+      return res.status(401).json({
+        message: "Invalid or expired token",
+      });
+    }
 
     req.user = decoded;
 

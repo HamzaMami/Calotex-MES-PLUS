@@ -11,13 +11,20 @@ export interface RegisterRequestDTO {
 }
 
 export interface LoginResponseDTO {
-  token: string;
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
   user: {
     id: number;
-    name: string;
+    name: string | null;
     email: string;
     role: string;
   };
+}
+
+export interface RefreshTokenDTO {
+  refresh_token: string;
 }
 
 export interface RegisterResponseDTO {

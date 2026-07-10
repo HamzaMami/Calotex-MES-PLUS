@@ -12,7 +12,7 @@ export const getAllEvents = async (req: Request, res: Response) => {
 
 export const getEventById = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const event = await eventService.getEventById(id);
     if (!event) {
       return res.status(404).json({ status: "error", message: "Event not found" });
@@ -34,7 +34,7 @@ export const createEvent = async (req: Request, res: Response) => {
 
 export const updateEvent = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const event = await eventService.updateEvent(id, req.body);
     if (!event) {
       return res.status(404).json({ status: "error", message: "Event not found" });
@@ -47,7 +47,7 @@ export const updateEvent = async (req: Request, res: Response) => {
 
 export const deleteEvent = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const success = await eventService.deleteEvent(id);
     if (!success) {
       return res.status(404).json({ status: "error", message: "Event not found" });

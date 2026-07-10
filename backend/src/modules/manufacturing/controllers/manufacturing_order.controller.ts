@@ -12,7 +12,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 
 export const getOrderById = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const order = await orderService.getOrderById(id);
     if (!order) {
       return res.status(404).json({ status: "error", message: "Manufacturing order not found" });
@@ -34,7 +34,7 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const updateOrder = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const order = await orderService.updateOrder(id, req.body);
     if (!order) {
       return res.status(404).json({ status: "error", message: "Manufacturing order not found" });
@@ -47,7 +47,7 @@ export const updateOrder = async (req: Request, res: Response) => {
 
 export const deleteOrder = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string, 10);
     const success = await orderService.deleteOrder(id);
     if (!success) {
       return res.status(404).json({ status: "error", message: "Manufacturing order not found" });

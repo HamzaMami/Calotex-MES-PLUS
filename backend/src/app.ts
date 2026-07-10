@@ -1,5 +1,8 @@
 import express from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { env } from "./config/env";
 import authRoutes from "./modules/auth/routes/auth.routes";
 import productRoutes from "./modules/products/routes/product.routes";
 import manufacturingRoutes from "./modules/manufacturing/routes/manufacturing_order.routes";
@@ -8,13 +11,35 @@ import inventoryRoutes from "./modules/inventory/routes/inventory.routes";
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Security headers
+app.use(helmet());
+
+// CORS: restrict to configured origins in production; allow all when the
+// allowlist is empty (development convenience).
+const corsOptions: CorsOptions = {
+  origin: env.cors.origins.length > 0 ? env.cors.origins : true,
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Rate limiting to mitigate brute-force / credential-stuffing on auth routes.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many authentication attempts. Please try again later.",
+  },
+});
+
 // Routes
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/manufacturing-orders", manufacturingRoutes);
 app.use("/api/events", eventRoutes);
