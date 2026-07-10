@@ -1,0 +1,57 @@
+name: calotex_app
+description: "Industrial/Manufacturing MES application built with Flutter and Clean Architecture."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Material Design
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.0
+
+  # HTTP & Networking
+  dio: ^5.4.0
+
+  # State Management
+  flutter_bloc: ^8.1.0
+  bloc: ^8.1.0
+
+  # Functional Programming
+  dartz: ^0.10.0
+
+  # Local Storage & Security
+  flutter_secure_storage: ^9.2.0
+  shared_preferences: ^2.2.0
+
+  # JSON Serialization
+  json_annotation: ^4.8.0
+
+  # Dependency Injection (Optional)
+  get_it: ^7.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Linting
+  flutter_lints: ^6.0.0
+
+  # JSON Code Generation
+  build_runner: ^2.4.0
+  json_serializable: ^6.7.0
+
+  # Testing
+  mocktail: ^1.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/logos/
