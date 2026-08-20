@@ -10,6 +10,11 @@ class ApiConstants {
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String logoutEndpoint = '/auth/logout';
 
+  // RBAC endpoints
+  static const String usersEndpoint = '/users';
+  static const String rolesEndpoint = '/roles';
+  static const String permissionsEndpoint = '/permissions';
+
   // Request timeout duration in seconds
   static const int timeoutDuration = 30;
 

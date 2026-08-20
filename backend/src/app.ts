@@ -8,6 +8,9 @@ import productRoutes from "./modules/products/routes/product.routes";
 import manufacturingRoutes from "./modules/manufacturing/routes/manufacturing_order.routes";
 import eventRoutes from "./modules/events/routes/event.routes";
 import inventoryRoutes from "./modules/inventory/routes/inventory.routes";
+import usersRoutes from "./modules/users/routes/users.routes";
+import rolesRoutes from "./modules/roles/routes/roles.routes";
+import permissionsRoutes from "./modules/permissions/routes/permissions.routes";
 
 const app = express();
 
@@ -44,6 +47,9 @@ app.use("/api/products", productRoutes);
 app.use("/api/manufacturing-orders", manufacturingRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/roles", rolesRoutes);
+app.use("/api/permissions", permissionsRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

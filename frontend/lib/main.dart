@@ -21,6 +21,13 @@ import 'features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
+// Admin (RBAC) feature
+import 'features/admin/data/datasources/admin_remote_datasource.dart';
+import 'features/admin/data/repositories/admin_repository.dart';
+import 'features/admin/presentation/bloc/admin_bloc.dart';
+import 'features/admin/presentation/pages/users_page.dart';
+import 'features/admin/presentation/pages/roles_page.dart';
+
 // Design system
 import 'shared/theme/app_theme.dart';
 
@@ -51,6 +58,10 @@ class SiltexApp extends StatelessWidget {
     final dashboardRepository =
         DashboardRepositoryImpl(remoteDataSource: dashboardRemoteDataSource);
 
+    // Admin (RBAC)
+    final adminRemoteDataSource = AdminRemoteDataSource(httpClient: httpClient);
+    final adminRepository = AdminRepository(remoteDataSource: adminRemoteDataSource);
+
     // Build the theme: AppTheme base + Poppins text theme
     final theme = AppTheme.theme.copyWith(
       textTheme: GoogleFonts.poppinsTextTheme(AppTheme.theme.textTheme).apply(
@@ -64,6 +75,7 @@ class SiltexApp extends StatelessWidget {
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<DashboardRepository>.value(
             value: dashboardRepository),
+        RepositoryProvider<AdminRepository>.value(value: adminRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -75,6 +87,9 @@ class SiltexApp extends StatelessWidget {
             create: (context) =>
                 DashboardBloc(dashboardRepository: dashboardRepository),
           ),
+          BlocProvider<AdminBloc>(
+            create: (context) => AdminBloc(adminRepository: adminRepository),
+          ),
         ],
         child: MaterialApp(
           title: 'Calotex MES — SILTEX',
@@ -85,6 +100,9 @@ class SiltexApp extends StatelessWidget {
             '/login': (context) => const LoginPage(),
             '/register': (context) => const RegisterPage(),
             '/home': (context) => const DashboardPage(),
+            // Admin (RBAC) screens
+            '/users': (context) => const UsersPage(),
+            '/roles': (context) => const RolesPage(),
             // Placeholder routes for future features
             '/inventory': (context) => const _ComingSoon(title: 'Inventory'),
             '/products': (context) => const _ComingSoon(title: 'Products'),

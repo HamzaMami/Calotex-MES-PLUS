@@ -21,6 +21,8 @@ class SiltexSidebar extends StatelessWidget {
 
   static const List<SidebarNavItem> _mainItems = [
     SidebarNavItem(label: 'Dashboard',     icon: Icons.dashboard_rounded,          route: '/home'),
+    SidebarNavItem(label: 'Users',         icon: Icons.people_alt_outlined,         route: '/users'),
+    SidebarNavItem(label: 'Roles',         icon: Icons.admin_panel_settings_outlined, route: '/roles'),
     SidebarNavItem(label: 'Inventory',     icon: Icons.inventory_2_outlined,        route: '/inventory'),
     SidebarNavItem(label: 'Products',      icon: Icons.category_outlined,           route: '/products'),
     SidebarNavItem(label: 'Drafts',        icon: Icons.edit_document,               route: '/drafts'),
