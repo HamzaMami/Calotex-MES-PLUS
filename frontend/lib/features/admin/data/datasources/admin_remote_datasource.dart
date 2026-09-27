@@ -20,9 +20,12 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to load users');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error loading users',
-      );
+      final status = e.response?.statusCode;
+      final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
+      final msg = status != null
+          ? 'Failed to load users (HTTP $status)${serverMsg != null ? ': $serverMsg' : ''}'
+          : 'Network error loading users: ${e.message ?? e.type.name}';
+      throw ServerException(message: msg);
     }
   }
 

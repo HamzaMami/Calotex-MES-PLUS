@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 
-/// RegisterPage styled with the premium SILTEX dark industrial theme.
+/// RegisterPage styled with the premium CALOTEX dark industrial theme.
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -148,9 +148,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // SILTEX Branding Header
+                      // CALOTEX Branding Header
                       const Text(
-                        'SILTEX',
+                        'CALOTEX',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: primaryAccent,

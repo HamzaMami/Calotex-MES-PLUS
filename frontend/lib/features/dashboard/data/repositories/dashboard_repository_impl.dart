@@ -11,17 +11,11 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<DashboardDataEntity> getDashboardData() async {
     try {
-      // Execute all API calls concurrently for better performance
-      final results = await Future.wait([
-        remoteDataSource.getProducts(),
-        remoteDataSource.getManufacturingOrders(),
-        remoteDataSource.getEvents(),
-      ]);
-
+      final model = await remoteDataSource.getDashboardData();
       return DashboardDataEntity(
-        products: results[0] as List<ProductEntity>,
-        manufacturingOrders: results[1] as List<ManufacturingOrderEntity>,
-        events: results[2] as List<EventEntity>,
+        products: model.products,
+        manufacturingOrders: model.manufacturingOrders,
+        events: model.events,
       );
     } on ServerException {
       return _fallbackDashboardData();
@@ -48,8 +42,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
     return DashboardDataEntity(
       products: [
         ProductEntity(
-          id: 1,
-          name: 'Siltex Panel A1',
+          id: 101,
+          name: 'Calotex Panel A1',
           leadEngineerId: 12,
           technicalMilestone: 'Prototype review',
           validationStatus: 'In progress',
@@ -58,7 +52,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
           updatedAt: today,
         ),
         ProductEntity(
-          id: 2,
+          id: 102,
           name: 'Calotex Tube Pro',
           leadEngineerId: 8,
           technicalMilestone: 'Bench testing',
@@ -67,13 +61,53 @@ class DashboardRepositoryImpl implements DashboardRepository {
           createdAt: today,
           updatedAt: today,
         ),
+        ProductEntity(
+          id: 103,
+          name: 'Calotex Valve X',
+          leadEngineerId: 15,
+          technicalMilestone: 'Design freeze',
+          validationStatus: 'Approved',
+          finalApproval: true,
+          createdAt: today,
+          updatedAt: today,
+        ),
+        ProductEntity(
+          id: 104,
+          name: 'Calotex Sensor M',
+          leadEngineerId: 9,
+          technicalMilestone: 'Calibration',
+          validationStatus: 'In progress',
+          finalApproval: false,
+          createdAt: today,
+          updatedAt: today,
+        ),
+        ProductEntity(
+          id: 105,
+          name: 'Calotex Bracket S',
+          leadEngineerId: 11,
+          technicalMilestone: 'Tooling ready',
+          validationStatus: 'Pending',
+          finalApproval: false,
+          createdAt: today,
+          updatedAt: today,
+        ),
+        ProductEntity(
+          id: 106,
+          name: 'Calotex Gasket R',
+          leadEngineerId: 14,
+          technicalMilestone: 'Material certified',
+          validationStatus: 'Approved',
+          finalApproval: true,
+          createdAt: today,
+          updatedAt: today,
+        ),
       ],
       manufacturingOrders: [
         ManufacturingOrderEntity(
-          id: 101,
-          productId: 1,
+          id: 11004891,
+          productId: 101,
           status: 'in_production',
-          targetQuantity: 240,
+          targetQuantity: 230,
           goodQuantity: 180,
           rejectQuantity: 8,
           qaQuantity: 12,
@@ -81,15 +115,59 @@ class DashboardRepositoryImpl implements DashboardRepository {
           endDate: today.add(const Duration(days: 7)),
         ),
         ManufacturingOrderEntity(
-          id: 102,
-          productId: 2,
-          status: 'quality_control',
-          targetQuantity: 180,
-          goodQuantity: 120,
-          rejectQuantity: 5,
-          qaQuantity: 18,
+          id: 11005007,
+          productId: 102,
+          status: 'completed',
+          targetQuantity: 10,
+          goodQuantity: 10,
+          rejectQuantity: 0,
+          qaQuantity: 0,
           startDate: today,
           endDate: today.add(const Duration(days: 4)),
+        ),
+        ManufacturingOrderEntity(
+          id: 11005113,
+          productId: 103,
+          status: 'in_production',
+          targetQuantity: 11,
+          goodQuantity: 7,
+          rejectQuantity: 2,
+          qaQuantity: 2,
+          startDate: today,
+          endDate: today.add(const Duration(days: 2)),
+        ),
+        ManufacturingOrderEntity(
+          id: 11005125,
+          productId: 104,
+          status: 'quality_control',
+          targetQuantity: 6,
+          goodQuantity: 4,
+          rejectQuantity: 1,
+          qaQuantity: 1,
+          startDate: today,
+          endDate: today.add(const Duration(days: 1)),
+        ),
+        ManufacturingOrderEntity(
+          id: 11005176,
+          productId: 105,
+          status: 'in_production',
+          targetQuantity: 12,
+          goodQuantity: 8,
+          rejectQuantity: 2,
+          qaQuantity: 2,
+          startDate: today,
+          endDate: today.add(const Duration(days: 3)),
+        ),
+        ManufacturingOrderEntity(
+          id: 6412,
+          productId: 106,
+          status: 'pending',
+          targetQuantity: 1,
+          goodQuantity: 0,
+          rejectQuantity: 0,
+          qaQuantity: 0,
+          startDate: today,
+          endDate: today.add(const Duration(days: 7)),
         ),
       ],
       events: [

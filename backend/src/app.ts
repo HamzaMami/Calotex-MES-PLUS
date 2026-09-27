@@ -11,6 +11,7 @@ import inventoryRoutes from "./modules/inventory/routes/inventory.routes";
 import usersRoutes from "./modules/users/routes/users.routes";
 import rolesRoutes from "./modules/roles/routes/roles.routes";
 import permissionsRoutes from "./modules/permissions/routes/permissions.routes";
+import dashboardRoutes from "./modules/dashboard/routes/dashboard.routes";
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/permissions", permissionsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

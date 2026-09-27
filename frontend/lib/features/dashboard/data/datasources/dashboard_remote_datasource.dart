@@ -3,9 +3,10 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/dashboard_models.dart';
 
 abstract class DashboardRemoteDataSource {
-  Future<List<ProductModel>> getProducts();
-  Future<List<ManufacturingOrderModel>> getManufacturingOrders();
-  Future<List<EventModel>> getEvents();
+  /// Fetch all aggregated dashboard data in a single request.
+  Future<DashboardDataEntityModel> getDashboardData();
+
+  /// Update the approval status of a specific product.
   Future<void> updateProductApproval(int productId, bool finalApproval);
 }
 
@@ -15,53 +16,22 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl({required this.httpClient});
 
   @override
-  Future<List<ProductModel>> getProducts() async {
+  Future<DashboardDataEntityModel> getDashboardData() async {
     try {
-      final response = await httpClient.get('/products');
+      final response = await httpClient.get('/dashboard');
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        return data.map((json) => ProductModel.fromJson(json)).toList();
+        return DashboardDataEntityModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
       } else {
         throw ServerException(
-            message: response.data['message'] ?? 'Failed to fetch products');
+          message: response.data['message'] ?? 'Failed to fetch dashboard data',
+        );
       }
     } on DioException catch (e) {
       throw ServerException(
-          message: e.response?.data['message'] ?? 'Network error fetching products');
-    }
-  }
-
-  @override
-  Future<List<ManufacturingOrderModel>> getManufacturingOrders() async {
-    try {
-      final response = await httpClient.get('/manufacturing-orders');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        return data.map((json) => ManufacturingOrderModel.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-            message: response.data['message'] ?? 'Failed to fetch manufacturing orders');
-      }
-    } on DioException catch (e) {
-      throw ServerException(
-          message: e.response?.data['message'] ?? 'Network error fetching orders');
-    }
-  }
-
-  @override
-  Future<List<EventModel>> getEvents() async {
-    try {
-      final response = await httpClient.get('/events');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
-        return data.map((json) => EventModel.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-            message: response.data['message'] ?? 'Failed to fetch events');
-      }
-    } on DioException catch (e) {
-      throw ServerException(
-          message: e.response?.data['message'] ?? 'Network error fetching events');
+        message: e.response?.data['message'] ?? 'Network error fetching dashboard data',
+      );
     }
   }
 
@@ -74,11 +44,13 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       );
       if (response.statusCode != 200) {
         throw ServerException(
-            message: response.data['message'] ?? 'Failed to update approval');
+          message: response.data['message'] ?? 'Failed to update approval',
+        );
       }
     } on DioException catch (e) {
       throw ServerException(
-          message: e.response?.data['message'] ?? 'Network error updating approval');
+        message: e.response?.data['message'] ?? 'Network error updating product approval',
+      );
     }
   }
 }

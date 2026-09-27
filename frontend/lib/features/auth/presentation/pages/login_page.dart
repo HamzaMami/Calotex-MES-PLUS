@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 
-/// LoginPage redesigned with the premium SILTEX dark industrial theme.
+/// LoginPage redesigned with the premium CALOTEX dark industrial theme.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -120,9 +120,9 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // SILTEX Branding Header
+                      // CALOTEX Branding Header
                       const Text(
-                        'SILTEX',
+                        'CALOTEX',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: primaryAccent,

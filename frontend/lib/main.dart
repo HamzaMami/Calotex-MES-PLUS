@@ -33,11 +33,11 @@ import 'shared/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SiltexApp());
+  runApp(const CalotexApp());
 }
 
-class SiltexApp extends StatelessWidget {
-  const SiltexApp({super.key});
+class CalotexApp extends StatelessWidget {
+  const CalotexApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +92,7 @@ class SiltexApp extends StatelessWidget {
           ),
         ],
         child: MaterialApp(
-          title: 'Calotex MES — SILTEX',
+          title: 'Calotex MES',
           debugShowCheckedModeBanner: false,
           theme: theme,
           home: const LoginPage(),

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/theme/app_theme.dart';
-import '../../../../shared/widgets/siltex_sidebar.dart';
-import '../../../../shared/widgets/siltex_top_bar.dart';
-import '../../../../shared/widgets/siltex_card.dart';
-import '../../../../shared/widgets/siltex_data_table.dart';
-import '../../../../shared/widgets/siltex_gradient_button.dart';
+import '../../../../shared/widgets/calotex_sidebar.dart';
+import '../../../../shared/widgets/calotex_top_bar.dart';
+import '../../../../shared/widgets/calotex_card.dart';
+import '../../../../shared/widgets/calotex_data_table.dart';
+import '../../../../shared/widgets/calotex_gradient_button.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../bloc/admin_bloc.dart';
 import '../../data/models/rbac_models.dart';
@@ -41,7 +41,7 @@ class _UsersPageState extends State<UsersPage> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SiltexSidebar(
+          CalotexSidebar(
             activeRoute: '/users',
             onNavItemTap: (route) {
               if (route == '/logout') {
@@ -55,7 +55,7 @@ class _UsersPageState extends State<UsersPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SiltexTopBar(userName: userName, userRole: _formatRole(userRole)),
+                CalotexTopBar(userName: userName, userRole: _formatRole(userRole)),
                 Expanded(
                   child: BlocConsumer<AdminBloc, AdminState>(
                     listener: (context, state) {
@@ -80,6 +80,18 @@ class _UsersPageState extends State<UsersPage> {
                       if (state is AdminLoading) {
                         return const Center(
                           child: CircularProgressIndicator(color: AppTheme.accentCyan),
+                        );
+                      }
+                      if (state is AdminError) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: SelectableText(
+                              'Error loading users:\n${state.message}',
+                              style: const TextStyle(color: AppTheme.accentRed),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         );
                       }
                       if (state is UsersLoaded) {
@@ -111,23 +123,26 @@ class _UsersPageState extends State<UsersPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Users', style: AppTheme.heading1),
-              SiltexGradientButton(
-                label: 'Create User',
-                onPressed: () => _showCreateUserDialog(context, roles),
+              SizedBox(
+                width: 160,
+                child: CalotexGradientButton(
+                  label: 'Create User',
+                  onPressed: () => _showCreateUserDialog(context, roles),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppTheme.spacingLg),
-          SiltexCard(
+          CalotexCard(
             title: 'All Users',
             padding: EdgeInsets.zero,
-            child: SiltexDataTable(
+            child: CalotexDataTable(
               columns: const [
-                SiltexTableColumn(label: 'Name', flex: 1.2),
-                SiltexTableColumn(label: 'Email', flex: 1.6),
-                SiltexTableColumn(label: 'Role', flex: 1.0),
-                SiltexTableColumn(label: 'Status', flex: 0.9),
-                SiltexTableColumn(label: 'Actions', flex: 1.1),
+                CalotexTableColumn(label: 'Name', flex: 1.2),
+                CalotexTableColumn(label: 'Email', flex: 1.6),
+                CalotexTableColumn(label: 'Role', flex: 1.0),
+                CalotexTableColumn(label: 'Status', flex: 0.9),
+                CalotexTableColumn(label: 'Actions', flex: 1.1),
               ],
               rows: users.map((u) => _userRow(context, u, roles)).toList(),
               currentPage: 1,
@@ -150,29 +165,36 @@ class _UsersPageState extends State<UsersPage> {
       Text(user.name ?? '-', style: AppTheme.bodyMedium),
       Text(user.email, style: AppTheme.bodyMedium),
       // Role dropdown
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.bgInput,
-          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<int>(
-            value: user.roleId,
-            isDense: true,
-            dropdownColor: AppTheme.bgElevated,
-            icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textMuted),
-            items: roles
-                .map((r) => DropdownMenuItem(
-                      value: r.id,
-                      child: Text(r.name, style: AppTheme.bodySmall),
-                    ))
-                .toList(),
-            onChanged: (roleId) {
-              if (roleId != null && roleId != user.roleId) {
-                context.read<AdminBloc>().add(UpdateUserRole(user.id, roleId));
-              }
-            },
+      SizedBox(
+        height: 36,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: AppTheme.bgInput,
+            borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              isExpanded: true,
+              value: roles.any((r) => r.id == user.roleId) ? user.roleId : null,
+              hint: user.roleName != null
+                  ? Text(user.roleName!, style: AppTheme.bodySmall)
+                  : null,
+              isDense: true,
+              dropdownColor: AppTheme.bgElevated,
+              icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textMuted),
+              items: roles
+                  .map((r) => DropdownMenuItem(
+                        value: r.id,
+                        child: Text(r.name, style: AppTheme.bodySmall),
+                      ))
+                  .toList(),
+              onChanged: (roleId) {
+                if (roleId != null && roleId != user.roleId) {
+                  context.read<AdminBloc>().add(UpdateUserRole(user.id, roleId));
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -284,7 +306,7 @@ class _UsersPageState extends State<UsersPage> {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
-            SiltexGradientButton(
+            CalotexGradientButton(
               label: 'Create',
               onPressed: () {
                 if (nameCtrl.text.isEmpty || emailCtrl.text.isEmpty || selectedRoleId == null) {

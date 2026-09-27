@@ -71,3 +71,34 @@ class EventModel extends EventEntity {
     );
   }
 }
+
+/// Aggregated dashboard response model — wraps the three data sources
+/// returned by the single `/api/dashboard` endpoint.
+class DashboardDataEntityModel {
+  final List<ProductModel> products;
+  final List<ManufacturingOrderModel> manufacturingOrders;
+  final List<EventModel> events;
+
+  const DashboardDataEntityModel({
+    required this.products,
+    required this.manufacturingOrders,
+    required this.events,
+  });
+
+  factory DashboardDataEntityModel.fromJson(Map<String, dynamic> json) {
+    final products = (json['products'] as List<dynamic>? ?? const [])
+        .map((e) => ProductModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    final orders = (json['manufacturing_orders'] as List<dynamic>? ?? const [])
+        .map((e) => ManufacturingOrderModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    final events = (json['events'] as List<dynamic>? ?? const [])
+        .map((e) => EventModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return DashboardDataEntityModel(
+      products: products,
+      manufacturingOrders: orders,
+      events: events,
+    );
+  }
+}

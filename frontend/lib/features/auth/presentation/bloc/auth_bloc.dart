@@ -30,15 +30,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
 
     final result = await _authRepository.isUserLoggedIn();
-    result.fold(
-      (failure) => emit(const Unauthenticated()),
-      (isLoggedIn) {
-        if (isLoggedIn) {
-          // TODO: Fetch current user from cache or API
+    await result.fold(
+      (failure) async => emit(const Unauthenticated()),
+      (isLoggedIn) async {
+        if (!isLoggedIn) {
           emit(const Unauthenticated());
-        } else {
-          emit(const Unauthenticated());
+          return;
         }
+
+        // Tokens exist and are not expired — restore the session by
+        // exchanging the refresh token for a fresh user + token pair so a
+        // page reload no longer forces the user to sign in again.
+        final userResult = await _authRepository.refreshToken();
+        userResult.fold(
+          (failure) => emit(const Unauthenticated()),
+          (user) => emit(Authenticated(user: user)),
+        );
       },
     );
   }

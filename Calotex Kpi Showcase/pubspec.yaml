@@ -1,0 +1,26 @@
+name: kpi_showcase
+description: "Manufacturing export performance dashboard"
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_chart: ^0.68.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/rvs.jpeg
+    - assets/workshop1.jpg
+    - assets/workshop2.png
+    - assets/workshop3.png

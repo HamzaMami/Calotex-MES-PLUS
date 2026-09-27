@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// SILTEX Design System — All design tokens for the entire app.
+/// CALOTEX Design System — All design tokens for the entire app.
 class AppTheme {
   AppTheme._();
 
@@ -60,31 +60,31 @@ class AppTheme {
 
   // ─── Text Styles ─────────────────────────────────────────────
   static const TextStyle heading1 = TextStyle(
-    color: textPrimary, fontSize: 24, fontWeight: FontWeight.w700, height: 1.3,
+    color: textPrimary, fontSize: 32, fontWeight: FontWeight.w700, height: 1.3,
   );
 
   static const TextStyle heading2 = TextStyle(
-    color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600, height: 1.4,
+    color: textPrimary, fontSize: 22, fontWeight: FontWeight.w600, height: 1.4,
   );
 
   static const TextStyle heading3 = TextStyle(
-    color: textPrimary, fontSize: 16, fontWeight: FontWeight.w600, height: 1.4,
+    color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600, height: 1.4,
   );
 
   static const TextStyle bodyLarge = TextStyle(
-    color: textPrimary, fontSize: 15, fontWeight: FontWeight.w400, height: 1.5,
+    color: textPrimary, fontSize: 17, fontWeight: FontWeight.w400, height: 1.5,
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    color: textPrimary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.5,
+    color: textPrimary, fontSize: 15, fontWeight: FontWeight.w400, height: 1.5,
   );
 
   static const TextStyle bodySmall = TextStyle(
-    color: textMuted, fontSize: 12, fontWeight: FontWeight.w400, height: 1.4,
+    color: textMuted, fontSize: 14, fontWeight: FontWeight.w400, height: 1.4,
   );
 
   static const TextStyle label = TextStyle(
-    color: textMuted, fontSize: 11, fontWeight: FontWeight.w600,
+    color: textMuted, fontSize: 12, fontWeight: FontWeight.w600,
     letterSpacing: 0.8,
   );
 

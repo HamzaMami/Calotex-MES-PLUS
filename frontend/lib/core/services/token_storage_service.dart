@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Secure token storage service using flutter_secure_storage.
-/// Handles persistence of JWT tokens with encryption.
+/// Secure token storage service.
+///
+/// Uses [FlutterSecureStorage] on mobile/desktop and falls back to
+/// [SharedPreferences] on the web, where secure storage is unreliable.
 class TokenStorageService {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -12,6 +16,11 @@ class TokenStorageService {
   TokenStorageService({FlutterSecureStorage? secureStorage})
       : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
+  SharedPreferences? _prefs;
+
+  Future<SharedPreferences> get _webPrefs async =>
+      _prefs ??= await SharedPreferences.getInstance();
+
   /// Save both access and refresh tokens along with expiry timestamp.
   Future<void> saveTokens({
     required String accessToken,
@@ -19,6 +28,15 @@ class TokenStorageService {
     required DateTime expiresAt,
   }) async {
     try {
+      if (kIsWeb) {
+        final prefs = await _webPrefs;
+        await Future.wait([
+          prefs.setString(_accessTokenKey, accessToken),
+          prefs.setString(_refreshTokenKey, refreshToken),
+          prefs.setString(_tokenExpiryKey, expiresAt.toIso8601String()),
+        ]);
+        return;
+      }
       await Future.wait([
         _secureStorage.write(key: _accessTokenKey, value: accessToken),
         _secureStorage.write(key: _refreshTokenKey, value: refreshToken),
@@ -35,6 +53,10 @@ class TokenStorageService {
   /// Retrieve the access token.
   Future<String?> getAccessToken() async {
     try {
+      if (kIsWeb) {
+        final prefs = await _webPrefs;
+        return prefs.getString(_accessTokenKey);
+      }
       return await _secureStorage.read(key: _accessTokenKey);
     } catch (e) {
       throw TokenStorageException('Failed to read access token: $e');
@@ -44,6 +66,10 @@ class TokenStorageService {
   /// Retrieve the refresh token.
   Future<String?> getRefreshToken() async {
     try {
+      if (kIsWeb) {
+        final prefs = await _webPrefs;
+        return prefs.getString(_refreshTokenKey);
+      }
       return await _secureStorage.read(key: _refreshTokenKey);
     } catch (e) {
       throw TokenStorageException('Failed to read refresh token: $e');
@@ -53,7 +79,9 @@ class TokenStorageService {
   /// Retrieve token expiry timestamp.
   Future<DateTime?> getTokenExpiry() async {
     try {
-      final expiryString = await _secureStorage.read(key: _tokenExpiryKey);
+      final expiryString = kIsWeb
+          ? (await _webPrefs).getString(_tokenExpiryKey)
+          : await _secureStorage.read(key: _tokenExpiryKey);
       if (expiryString == null) return null;
       return DateTime.parse(expiryString);
     } catch (e) {
@@ -66,7 +94,7 @@ class TokenStorageService {
     try {
       final expiry = await getTokenExpiry();
       if (expiry == null) return true;
-      
+
       // Add 30-second buffer to refresh slightly before actual expiry
       return DateTime.now().isAfter(expiry.subtract(Duration(seconds: 30)));
     } catch (e) {
@@ -77,6 +105,15 @@ class TokenStorageService {
   /// Clear all stored tokens.
   Future<void> clearTokens() async {
     try {
+      if (kIsWeb) {
+        final prefs = await _webPrefs;
+        await Future.wait([
+          prefs.remove(_accessTokenKey),
+          prefs.remove(_refreshTokenKey),
+          prefs.remove(_tokenExpiryKey),
+        ]);
+        return;
+      }
       await Future.wait([
         _secureStorage.delete(key: _accessTokenKey),
         _secureStorage.delete(key: _refreshTokenKey),
