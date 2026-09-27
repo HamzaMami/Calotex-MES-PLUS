@@ -4,8 +4,8 @@ import * as tokenUtils from "../../auth/utils/token.utils";
 import { UserWithRole } from "../interfaces/users.interface";
 import { sendEmail, generateRegistrationEmail } from "../../../shared/services/email.service";
 
-export const getAllUsers = async (): Promise<UserWithRole[]> => {
-  return usersRepository.findAll();
+export const getAllUsers = async (page?: number, limit?: number) => {
+  return usersRepository.findAll(page, limit);
 };
 
 export const getUserById = async (id: number): Promise<UserWithRole | null> => {

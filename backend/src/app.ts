@@ -62,11 +62,20 @@ app.get("/api/health", (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(`[Error] ${req.method} ${req.path}:`, err);
+
+  const statusCode = typeof err.statusCode === "number" ? err.statusCode : 500;
+  const message = err.message && statusCode < 500
+    ? err.message
+    : env.isProduction
+    ? "Internal server error"
+    : err.message || "Internal server error";
+
+  res.status(statusCode).json({
     success: false,
-    message: "Internal server error",
+    message,
+    ...(env.isProduction ? {} : { stack: err.stack }),
   });
 });
 

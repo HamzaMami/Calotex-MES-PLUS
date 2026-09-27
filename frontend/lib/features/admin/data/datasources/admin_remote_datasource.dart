@@ -10,6 +10,19 @@ class AdminRemoteDataSource {
 
   AdminRemoteDataSource({required this.httpClient});
 
+  String _extractErrorMessage(DioException e, String fallback) {
+    if (e.response?.data is Map<String, dynamic>) {
+      final data = e.response!.data as Map<String, dynamic>;
+      if (data['details'] is List && (data['details'] as List).isNotEmpty) {
+        return (data['details'] as List).join(', ');
+      }
+      if (data['message'] != null && data['message'].toString().isNotEmpty) {
+        return data['message'].toString();
+      }
+    }
+    return fallback;
+  }
+
   // ── Users ──────────────────────────────────────────────────────
   Future<List<UserModel>> getUsers() async {
     try {
@@ -20,12 +33,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to load users');
     } on DioException catch (e) {
-      final status = e.response?.statusCode;
-      final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
-      final msg = status != null
-          ? 'Failed to load users (HTTP $status)${serverMsg != null ? ': $serverMsg' : ''}'
-          : 'Network error loading users: ${e.message ?? e.type.name}';
-      throw ServerException(message: msg);
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to load users'));
     }
   }
 
@@ -40,9 +48,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to create user');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error creating user',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to create user'));
     }
   }
 
@@ -64,9 +70,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to update user');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error updating user',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to update user'));
     }
   }
 
@@ -77,9 +81,7 @@ class AdminRemoteDataSource {
         throw ServerException(message: response.data['message'] ?? 'Failed to delete user');
       }
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error deleting user',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to delete user'));
     }
   }
 
@@ -93,9 +95,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to load roles');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error loading roles',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to load roles'));
     }
   }
 
@@ -108,9 +108,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to load role');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error loading role',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to load role'));
     }
   }
 
@@ -125,9 +123,7 @@ class AdminRemoteDataSource {
       }
       throw ServerException(message: response.data['message'] ?? 'Failed to create role');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error creating role',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to create role'));
     }
   }
 
@@ -138,9 +134,7 @@ class AdminRemoteDataSource {
         throw ServerException(message: response.data['message'] ?? 'Failed to delete role');
       }
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error deleting role',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to delete role'));
     }
   }
 
@@ -154,9 +148,7 @@ class AdminRemoteDataSource {
         throw ServerException(message: response.data['message'] ?? 'Failed to update permissions');
       }
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error updating permissions',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to update permissions'));
     }
   }
 
@@ -171,9 +163,7 @@ class AdminRemoteDataSource {
       throw ServerException(
           message: response.data['message'] ?? 'Failed to load permissions');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error loading permissions',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to load permissions'));
     }
   }
 
@@ -189,9 +179,7 @@ class AdminRemoteDataSource {
       throw ServerException(
           message: response.data['message'] ?? 'Failed to create permission');
     } on DioException catch (e) {
-      throw ServerException(
-        message: e.response?.data['message'] ?? 'Network error creating permission',
-      );
+      throw ServerException(message: _extractErrorMessage(e, 'Failed to create permission'));
     }
   }
 }

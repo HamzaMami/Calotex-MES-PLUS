@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Core
-import 'core/network/http_client.dart';
-import 'core/services/token_storage_service.dart';
+// Dependency Injection
+import 'core/di/injection_container.dart';
 
 // Auth feature
-import 'features/auth/data/datasources/auth_remote_datasource.dart';
-import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -16,13 +13,10 @@ import 'features/auth/presentation/pages/register_page.dart';
 
 // Dashboard feature
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
-import 'features/dashboard/data/datasources/dashboard_remote_datasource.dart';
-import 'features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 
 // Admin (RBAC) feature
-import 'features/admin/data/datasources/admin_remote_datasource.dart';
 import 'features/admin/data/repositories/admin_repository.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 import 'features/admin/presentation/pages/users_page.dart';
@@ -31,8 +25,9 @@ import 'features/admin/presentation/pages/roles_page.dart';
 // Design system
 import 'shared/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initDependencies();
   runApp(const CalotexApp());
 }
 
@@ -41,27 +36,6 @@ class CalotexApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokenStorage = TokenStorageService();
-    final httpClient = HttpClient()..initialize(tokenStorage: tokenStorage);
-
-    // Auth
-    final authRemoteDataSource =
-        AuthRemoteDataSourceImpl(httpClient: httpClient);
-    final authRepository = AuthRepositoryImpl(
-      remoteDataSource: authRemoteDataSource,
-      tokenStorage: tokenStorage,
-    );
-
-    // Dashboard
-    final dashboardRemoteDataSource =
-        DashboardRemoteDataSourceImpl(httpClient: httpClient.dio);
-    final dashboardRepository =
-        DashboardRepositoryImpl(remoteDataSource: dashboardRemoteDataSource);
-
-    // Admin (RBAC)
-    final adminRemoteDataSource = AdminRemoteDataSource(httpClient: httpClient);
-    final adminRepository = AdminRepository(remoteDataSource: adminRemoteDataSource);
-
     // Build the theme: AppTheme base + Poppins text theme
     final theme = AppTheme.theme.copyWith(
       textTheme: GoogleFonts.poppinsTextTheme(AppTheme.theme.textTheme).apply(
@@ -72,23 +46,22 @@ class CalotexApp extends StatelessWidget {
 
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<AuthRepository>.value(value: authRepository),
+        RepositoryProvider<AuthRepository>.value(value: sl<AuthRepository>()),
         RepositoryProvider<DashboardRepository>.value(
-            value: dashboardRepository),
-        RepositoryProvider<AdminRepository>.value(value: adminRepository),
+            value: sl<DashboardRepository>()),
+        RepositoryProvider<AdminRepository>.value(value: sl<AdminRepository>()),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>(
-            create: (context) => AuthBloc(authRepository: authRepository)
-              ..add(const AuthCheckRequested()),
+            create: (context) =>
+                sl<AuthBloc>()..add(const AuthCheckRequested()),
           ),
           BlocProvider<DashboardBloc>(
-            create: (context) =>
-                DashboardBloc(dashboardRepository: dashboardRepository),
+            create: (context) => sl<DashboardBloc>(),
           ),
           BlocProvider<AdminBloc>(
-            create: (context) => AdminBloc(adminRepository: adminRepository),
+            create: (context) => sl<AdminBloc>(),
           ),
         ],
         child: MaterialApp(

@@ -125,20 +125,18 @@ class ParsedPermission {
 }
 
 /// A single role's editable permission matrix.
-///
-/// Shows permissions grouped by resource with Read/Create/Update/Delete
-/// toggle columns and a per-category "Select All" control. Supports a clean
-/// [viewMode] (read-only) and an [editMode] with local draft state and Save.
 class PermissionMatrix extends StatefulWidget {
   final RoleModel role;
   final List<PermissionModel> allPermissions;
   final ValueChanged<List<int>>? onSave;
+  final VoidCallback? onDelete;
 
   const PermissionMatrix({
     super.key,
     required this.role,
     required this.allPermissions,
     this.onSave,
+    this.onDelete,
   });
 
   @override
@@ -147,22 +145,21 @@ class PermissionMatrix extends StatefulWidget {
 
 class _PermissionMatrixState extends State<PermissionMatrix> {
   late Set<int> _selected;
-  late bool _editing;
+  bool _editing = false;
 
   @override
   void initState() {
     super.initState();
     _selected = {for (final p in widget.role.permissions) p.id};
-    // System roles are protected: start in view mode and cannot be edited.
-    _editing = !widget.role.isSystem;
+    _editing = false;
   }
 
   @override
   void didUpdateWidget(covariant PermissionMatrix oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.role != widget.role) {
+    if (oldWidget.role != widget.role ||
+        oldWidget.role.permissions != widget.role.permissions) {
       _selected = {for (final p in widget.role.permissions) p.id};
-      _editing = !widget.role.isSystem;
     }
   }
 
@@ -245,18 +242,40 @@ class _PermissionMatrixState extends State<PermissionMatrix> {
               if (widget.role.isSystem)
                 _SystemBadge()
               else if (readOnly)
-                TextButton.icon(
-                  onPressed: () => setState(() => _editing = true),
-                  icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('Edit'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.accentCyan,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.onDelete != null)
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded,
+                            size: 18, color: AppTheme.accentRed),
+                        tooltip: 'Delete Role',
+                        onPressed: widget.onDelete,
+                      ),
+                    TextButton.icon(
+                      onPressed: () => setState(() => _editing = true),
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: const Text('Edit'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.accentCyan,
+                      ),
+                    ),
+                  ],
                 )
               else
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (widget.onDelete != null) ...[
+                      TextButton(
+                        onPressed: widget.onDelete,
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.accentRed,
+                        ),
+                        child: const Text('Delete'),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     TextButton(
                       onPressed: () {
                         setState(() {
@@ -273,8 +292,12 @@ class _PermissionMatrixState extends State<PermissionMatrix> {
                       label: 'Save',
                       width: 110,
                       height: 38,
-                      onPressed: () =>
-                          widget.onSave?.call(_selected.toList()),
+                      onPressed: () {
+                        setState(() {
+                          _editing = false; // Exit edit mode
+                        });
+                        widget.onSave?.call(_selected.toList());
+                      },
                     ),
                   ],
                 ),

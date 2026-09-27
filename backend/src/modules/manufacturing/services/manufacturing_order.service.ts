@@ -1,8 +1,8 @@
 import * as orderRepository from "../repositories/manufacturing_order.repository";
 import { ManufacturingOrder } from "../interfaces/manufacturing_order.interface";
 
-export const getAllOrders = async (): Promise<ManufacturingOrder[]> => {
-  return await orderRepository.findAll();
+export const getAllOrders = async (page?: number, limit?: number) => {
+  return await orderRepository.findAll(page, limit);
 };
 
 export const getOrderById = async (id: number): Promise<ManufacturingOrder | null> => {

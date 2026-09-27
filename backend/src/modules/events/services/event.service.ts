@@ -1,8 +1,8 @@
 import * as eventRepository from "../repositories/event.repository";
 import { Event } from "../interfaces/event.interface";
 
-export const getAllEvents = async (): Promise<Event[]> => {
-  return await eventRepository.findAll();
+export const getAllEvents = async (page?: number, limit?: number) => {
+  return await eventRepository.findAll(page, limit);
 };
 
 export const getEventById = async (id: number): Promise<Event | null> => {

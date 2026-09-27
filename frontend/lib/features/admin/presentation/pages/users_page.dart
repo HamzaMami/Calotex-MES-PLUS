@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/string_utils.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/calotex_sidebar.dart';
 import '../../../../shared/widgets/calotex_top_bar.dart';
@@ -22,7 +23,7 @@ class _UsersPageState extends State<UsersPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AdminBloc>().add(LoadUsers());
+    context.read<AdminBloc>().add(const LoadUsers());
   }
 
   @override
@@ -55,7 +56,10 @@ class _UsersPageState extends State<UsersPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CalotexTopBar(userName: userName, userRole: _formatRole(userRole)),
+                CalotexTopBar(
+                  userName: userName,
+                  userRole: StringUtils.formatRole(userRole),
+                ),
                 Expanded(
                   child: BlocConsumer<AdminBloc, AdminState>(
                     listener: (context, state) {
@@ -66,6 +70,7 @@ class _UsersPageState extends State<UsersPage> {
                             backgroundColor: AppTheme.accentRed,
                           ),
                         );
+                        context.read<AdminBloc>().add(const LoadUsers());
                       } else if (state is AdminOperationSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -73,7 +78,7 @@ class _UsersPageState extends State<UsersPage> {
                             backgroundColor: AppTheme.accentGreen,
                           ),
                         );
-                        context.read<AdminBloc>().add(LoadUsers());
+                        context.read<AdminBloc>().add(const LoadUsers());
                       }
                     },
                     builder: (context, state) {
@@ -86,10 +91,23 @@ class _UsersPageState extends State<UsersPage> {
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.all(24),
-                            child: SelectableText(
-                              'Error loading users:\n${state.message}',
-                              style: const TextStyle(color: AppTheme.accentRed),
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SelectableText(
+                                  'Error loading users:\n${state.message}',
+                                  style: const TextStyle(color: AppTheme.accentRed),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                CalotexGradientButton(
+                                  label: 'Retry',
+                                  width: 120,
+                                  onPressed: () {
+                                    context.read<AdminBloc>().add(const LoadUsers());
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -97,7 +115,12 @@ class _UsersPageState extends State<UsersPage> {
                       if (state is UsersLoaded) {
                         return _buildContent(context, state.users, state.roles);
                       }
-                      return const Center(child: Text('No users found', style: TextStyle(color: AppTheme.textMuted)));
+                      return const Center(
+                        child: Text(
+                          'No users found',
+                          style: TextStyle(color: AppTheme.textMuted),
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -122,7 +145,7 @@ class _UsersPageState extends State<UsersPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Users', style: AppTheme.heading1),
+              const Text('Users', style: AppTheme.heading1),
               SizedBox(
                 width: 160,
                 child: CalotexGradientButton(
@@ -205,8 +228,8 @@ class _UsersPageState extends State<UsersPage> {
             label: user.status == 'active' ? 'Deactivate' : 'Activate',
             color: user.status == 'active' ? AppTheme.accentOrange : AppTheme.accentGreen,
             onPressed: () => context.read<AdminBloc>().add(
-              SetUserStatus(user.id, user.status == 'active' ? 'inactive' : 'active'),
-            ),
+                  SetUserStatus(user.id, user.status == 'active' ? 'inactive' : 'active'),
+                ),
           ),
           const SizedBox(width: 8),
           _StatusAction(
@@ -290,7 +313,7 @@ class _UsersPageState extends State<UsersPage> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
-                  initialValue: selectedRoleId,
+                  value: selectedRoleId,
                   dropdownColor: AppTheme.bgElevated,
                   decoration: AppTheme.inputDecoration(hint: 'Role'),
                   items: roles
@@ -314,7 +337,7 @@ class _UsersPageState extends State<UsersPage> {
                 }
                 Navigator.pop(ctx);
                 context.read<AdminBloc>().add(
-                      CreateUser(nameCtrl.text, emailCtrl.text, selectedRoleId!),
+                      CreateUser(nameCtrl.text.trim(), emailCtrl.text.trim(), selectedRoleId!),
                     );
               },
             ),
@@ -323,9 +346,6 @@ class _UsersPageState extends State<UsersPage> {
       ),
     );
   }
-
-  String _formatRole(String role) =>
-      role.split('_').map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1)).join(' ');
 }
 
 class _StatusAction extends StatelessWidget {

@@ -1,7 +1,44 @@
 import pool from "../../../config/db";
 import { InventoryItem } from "../interfaces/inventory.interface";
 
-export const findAll = async (): Promise<InventoryItem[]> => {
+const ALLOWED_INVENTORY_COLUMNS = new Set([
+  "item_name",
+  "sku",
+  "quantity",
+  "unit",
+  "location",
+  "last_restocked",
+]);
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const findAll = async (
+  page?: number,
+  limit?: number
+): Promise<InventoryItem[] | PaginatedResult<InventoryItem>> => {
+  if (page && limit) {
+    const offset = (page - 1) * limit;
+    const countResult = await pool.query("SELECT COUNT(*) FROM inventory");
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    const dataResult = await pool.query(
+      "SELECT * FROM inventory ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+      [limit, offset]
+    );
+
+    return {
+      items: dataResult.rows,
+      total,
+      page,
+      limit,
+    };
+  }
+
   const result = await pool.query(
     "SELECT * FROM inventory ORDER BY created_at DESC"
   );
@@ -29,15 +66,17 @@ export const update = async (
   id: number,
   itemData: Partial<InventoryItem>
 ): Promise<InventoryItem | null> => {
-  const keys = Object.keys(itemData);
-  if (keys.length === 0) return null;
+  const entries = Object.entries(itemData).filter(([key]) =>
+    ALLOWED_INVENTORY_COLUMNS.has(key)
+  );
+  if (entries.length === 0) return null;
 
-  const setClause = keys
-    .map((key, index) => `"${key}" = $${index + 2}`)
+  const setClause = entries
+    .map(([key], index) => `"${key}" = $${index + 2}`)
     .join(", ");
-  const values = keys.map((key) => (itemData as any)[key]);
+  const values = entries.map(([, value]) => value);
 
-  const query = `UPDATE inventory SET ${setClause} WHERE id = $1 RETURNING *`;
+  const query = `UPDATE inventory SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING *`;
   const result = await pool.query(query, [id, ...values]);
 
   return result.rows[0] || null;

@@ -1,8 +1,8 @@
 import * as inventoryRepository from "../repositories/inventory.repository";
 import { InventoryItem } from "../interfaces/inventory.interface";
 
-export const getAllItems = async (): Promise<InventoryItem[]> => {
-  return await inventoryRepository.findAll();
+export const getAllItems = async (page?: number, limit?: number) => {
+  return await inventoryRepository.findAll(page, limit);
 };
 
 export const getItemById = async (id: number): Promise<InventoryItem | null> => {

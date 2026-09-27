@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/string_utils.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/calotex_sidebar.dart';
 import '../../../../shared/widgets/calotex_top_bar.dart';
@@ -21,7 +22,7 @@ class _RolesPageState extends State<RolesPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AdminBloc>().add(LoadRolesAndPermissions());
+    context.read<AdminBloc>().add(const LoadRolesAndPermissions());
   }
 
   @override
@@ -54,7 +55,10 @@ class _RolesPageState extends State<RolesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CalotexTopBar(userName: userName, userRole: _formatRole(userRole)),
+                CalotexTopBar(
+                  userName: userName,
+                  userRole: StringUtils.formatRole(userRole),
+                ),
                 Expanded(
                   child: BlocConsumer<AdminBloc, AdminState>(
                     listener: (context, state) {
@@ -65,6 +69,7 @@ class _RolesPageState extends State<RolesPage> {
                             backgroundColor: AppTheme.accentRed,
                           ),
                         );
+                        context.read<AdminBloc>().add(const LoadRolesAndPermissions());
                       } else if (state is AdminOperationSuccess) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -72,7 +77,7 @@ class _RolesPageState extends State<RolesPage> {
                             backgroundColor: AppTheme.accentGreen,
                           ),
                         );
-                        context.read<AdminBloc>().add(LoadRolesAndPermissions());
+                        context.read<AdminBloc>().add(const LoadRolesAndPermissions());
                       }
                     },
                     builder: (context, state) {
@@ -85,10 +90,25 @@ class _RolesPageState extends State<RolesPage> {
                         return Center(
                           child: Padding(
                             padding: const EdgeInsets.all(24),
-                            child: SelectableText(
-                              'Error loading roles:\n${state.message}',
-                              style: const TextStyle(color: AppTheme.accentRed),
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SelectableText(
+                                  'Error loading roles:\n${state.message}',
+                                  style: const TextStyle(color: AppTheme.accentRed),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                CalotexGradientButton(
+                                  label: 'Retry',
+                                  width: 120,
+                                  onPressed: () {
+                                    context
+                                        .read<AdminBloc>()
+                                        .add(const LoadRolesAndPermissions());
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -117,6 +137,9 @@ class _RolesPageState extends State<RolesPage> {
     List<RoleModel> roles,
     List<PermissionModel> permissions,
   ) {
+    final systemRoles = roles.where((r) => r.isSystem).toList();
+    final customRoles = roles.where((r) => !r.isSystem).toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppTheme.spacingLg),
       child: Column(
@@ -125,25 +148,95 @@ class _RolesPageState extends State<RolesPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Roles & Permissions', style: AppTheme.heading1),
+              const Text('Roles & Permissions', style: AppTheme.heading1),
               CalotexGradientButton(
-                label: 'Create Role',
-                width: 160,
+                label: 'Create Custom Role',
+                width: 200,
                 onPressed: () => _showCreateRoleDialog(context),
               ),
             ],
           ),
           const SizedBox(height: AppTheme.spacingLg),
-          ...roles.map((role) => Padding(
-                padding: const EdgeInsets.only(bottom: AppTheme.spacingMd),
-                child: PermissionMatrix(
-                  role: role,
-                  allPermissions: permissions,
-                  onSave: (ids) => context
-                      .read<AdminBloc>()
-                      .add(SetRolePermissionsEvent(role.id, ids)),
+
+          // ── CUSTOM ROLES SECTION ─────────────────────────────
+          const Row(
+            children: [
+              Icon(Icons.tune_rounded, color: AppTheme.accentOrange, size: 20),
+              SizedBox(width: 8),
+              Text('Custom Roles (Configurable Permissions)', style: AppTheme.heading2),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (customRoles.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: AppTheme.cardDecoration(),
+              child: const Center(
+                child: Text(
+                  'No custom roles created yet. Click "Create Custom Role" to add one.',
+                  style: TextStyle(color: AppTheme.textMuted),
                 ),
-              )),
+              ),
+            )
+          else
+            ...customRoles.map((role) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppTheme.spacingMd),
+                  child: PermissionMatrix(
+                    role: role,
+                    allPermissions: permissions,
+                    onSave: (ids) => context
+                        .read<AdminBloc>()
+                        .add(SetRolePermissionsEvent(role.id, ids)),
+                    onDelete: () => _confirmDeleteRole(context, role),
+                  ),
+                )),
+
+          const SizedBox(height: AppTheme.spacingLg),
+
+          // ── SYSTEM ROLES SECTION ─────────────────────────────
+          if (systemRoles.isNotEmpty) ...[
+            const Row(
+              children: [
+                Icon(Icons.verified_user_rounded, color: AppTheme.accentCyan, size: 20),
+                SizedBox(width: 8),
+                Text('System Roles (Fixed System Defaults)', style: AppTheme.heading2),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...systemRoles.map((role) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppTheme.spacingMd),
+                  child: PermissionMatrix(
+                    role: role,
+                    allPermissions: permissions,
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteRole(BuildContext context, RoleModel role) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.bgCard,
+        title: const Text('Delete Role', style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text('Are you sure you want to delete the role "${role.name}"? Users assigned to this role will lose their permissions.',
+            style: AppTheme.bodyMedium),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<AdminBloc>().add(RemoveRole(role.id));
+            },
+            child: const Text('Delete', style: TextStyle(color: AppTheme.accentRed)),
+          ),
         ],
       ),
     );
@@ -166,7 +259,7 @@ class _RolesPageState extends State<RolesPage> {
               TextField(
                 controller: nameCtrl,
                 decoration:
-                    AppTheme.inputDecoration(hint: 'Role name (e.g. quality_lead)'),
+                    AppTheme.inputDecoration(hint: 'Role name (e.g. Quality Manager)'),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -189,14 +282,11 @@ class _RolesPageState extends State<RolesPage> {
               Navigator.pop(ctx);
               context
                   .read<AdminBloc>()
-                  .add(CreateRole(nameCtrl.text, descCtrl.text));
+                  .add(CreateRole(nameCtrl.text.trim(), descCtrl.text.trim()));
             },
           ),
         ],
       ),
     );
   }
-
-  String _formatRole(String role) =>
-      role.split('_').map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1)).join(' ');
 }

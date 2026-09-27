@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../shared/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 
 /// RegisterPage styled with the premium CALOTEX dark industrial theme.
@@ -89,16 +90,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Custom Color Scheme
-    const backgroundColor = Color(0xFF1B1A30);
-    const cardColor = Color(0xFF282743);
-    const inputColor = Color(0xFF201F37);
-    const primaryAccent = Color(0xFF00E5FF);
-    const secondaryAccent = Color(0xFF3D8BFF);
-    const textMuted = Color(0xFF8A8AA8);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.bgPrimary,
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailureState) {
@@ -108,7 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   state.errorMessage,
                   style: const TextStyle(color: Colors.white),
                 ),
-                backgroundColor: Colors.redAccent,
+                backgroundColor: AppTheme.accentRed,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -128,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Container(
                 padding: const EdgeInsets.all(32.0),
                 decoration: BoxDecoration(
-                  color: cardColor,
+                  color: AppTheme.bgCard,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.08),
@@ -153,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         'CALOTEX',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: primaryAccent,
+                          color: AppTheme.accentCyan,
                           fontSize: 36,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 2.0,
@@ -164,7 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         'Seamless Manufacturing. Streamlined Monitoring.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: textMuted,
+                          color: AppTheme.textMuted,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -176,7 +169,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           'Full Name',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -186,15 +179,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Name Field
                       TextFormField(
                         controller: _nameController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppTheme.textPrimary),
                         textCapitalization: TextCapitalization.words,
                         validator: _validateName,
                         decoration: InputDecoration(
                           hintText: 'Enter your first and last name',
-                          hintStyle: const TextStyle(color: textMuted, fontSize: 14),
-                          prefixIcon: const Icon(Icons.person_outline, color: textMuted),
+                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                          prefixIcon: const Icon(Icons.person_outline, color: AppTheme.textMuted),
                           filled: true,
-                          fillColor: inputColor,
+                          fillColor: AppTheme.bgInput,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -202,15 +195,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: primaryAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentCyan, width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.5),
                           ),
                         ),
                       ),
@@ -221,7 +214,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           'Email Address',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -231,15 +224,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Email Field
                       TextFormField(
                         controller: _emailController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppTheme.textPrimary),
                         keyboardType: TextInputType.emailAddress,
                         validator: _validateEmail,
                         decoration: InputDecoration(
                           hintText: 'Enter your email',
-                          hintStyle: const TextStyle(color: textMuted, fontSize: 14),
-                          prefixIcon: const Icon(Icons.email_outlined, color: textMuted),
+                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                          prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.textMuted),
                           filled: true,
-                          fillColor: inputColor,
+                          fillColor: AppTheme.bgInput,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -247,15 +240,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: primaryAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentCyan, width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.5),
                           ),
                         ),
                       ),
@@ -266,7 +259,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           'Password',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -277,18 +270,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppTheme.textPrimary),
                         validator: _validatePassword,
                         decoration: InputDecoration(
                           hintText: 'Enter password (min 8 chars)',
-                          hintStyle: const TextStyle(color: textMuted, fontSize: 14),
-                          prefixIcon: const Icon(Icons.lock_outlined, color: textMuted),
+                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                          prefixIcon: const Icon(Icons.lock_outlined, color: AppTheme.textMuted),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: textMuted,
+                              color: AppTheme.textMuted,
                             ),
                             onPressed: () {
                               setState(() {
@@ -297,7 +290,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             },
                           ),
                           filled: true,
-                          fillColor: inputColor,
+                          fillColor: AppTheme.bgInput,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -305,15 +298,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: primaryAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentCyan, width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.5),
                           ),
                         ),
                       ),
@@ -324,7 +317,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           'Confirm Password',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -335,18 +328,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPassword,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: AppTheme.textPrimary),
                         validator: _validateConfirmPassword,
                         decoration: InputDecoration(
                           hintText: 'Re-enter your password',
-                          hintStyle: const TextStyle(color: textMuted, fontSize: 14),
-                          prefixIcon: const Icon(Icons.lock_clock_outlined, color: textMuted),
+                          hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                          prefixIcon: const Icon(Icons.lock_clock_outlined, color: AppTheme.textMuted),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscureConfirmPassword
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: textMuted,
+                              color: AppTheme.textMuted,
                             ),
                             onPressed: () {
                               setState(() {
@@ -355,7 +348,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             },
                           ),
                           filled: true,
-                          fillColor: inputColor,
+                          fillColor: AppTheme.bgInput,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -363,15 +356,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: primaryAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentCyan, width: 1.5),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.0),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(color: AppTheme.accentRed, width: 1.5),
                           ),
                         ),
                       ),
@@ -383,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           if (state is AuthLoading) {
                             return const Center(
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(primaryAccent),
+                                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentCyan),
                               ),
                             );
                           }
@@ -391,7 +384,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               gradient: const LinearGradient(
-                                colors: [primaryAccent, secondaryAccent],
+                                colors: [AppTheme.accentCyan, AppTheme.accentBlue],
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
                               ),
@@ -426,7 +419,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         children: [
                           const Text(
                             'Already have an account? ',
-                            style: TextStyle(color: textMuted, fontSize: 14),
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -435,7 +428,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: const Text(
                               'Login',
                               style: TextStyle(
-                                color: primaryAccent,
+                                color: AppTheme.accentCyan,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 decoration: TextDecoration.underline,

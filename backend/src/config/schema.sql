@@ -86,6 +86,7 @@ INSERT INTO roles (name, description, is_system) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO permissions (name, description) VALUES
+  ('dashboard:read', 'Read dashboard'),
   ('users:create', 'Create users'),
   ('users:read', 'Read users'),
   ('users:update', 'Update users'),
@@ -94,6 +95,10 @@ INSERT INTO permissions (name, description) VALUES
   ('roles:read', 'Read roles'),
   ('roles:update', 'Update roles'),
   ('roles:delete', 'Delete roles'),
+  ('permissions:create', 'Create permissions'),
+  ('permissions:read', 'Read permissions'),
+  ('permissions:update', 'Update permissions'),
+  ('permissions:delete', 'Delete permissions'),
   ('products:create', 'Create products'),
   ('products:read', 'Read products'),
   ('products:update', 'Update products'),
@@ -112,7 +117,12 @@ INSERT INTO permissions (name, description) VALUES
   ('events:delete', 'Delete events')
 ON CONFLICT (name) DO NOTHING;
 
--- ─── Seed products (referenced by manufacturing orders) ────────────────────────
+-- Seed system role permissions
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'admin'
+ON CONFLICT DO NOTHING;
+
+-- Seed products
 INSERT INTO products (id, name, lead_engineer_id, technical_milestone, validation_status, final_approval, created_at, updated_at) VALUES
   (101, 'Calotex Panel A1', 12, 'Prototype review', 'In progress', false, NOW(), NOW()),
   (102, 'Calotex Tube Pro', 8, 'Bench testing', 'QA pending', true, NOW(), NOW()),
@@ -122,7 +132,7 @@ INSERT INTO products (id, name, lead_engineer_id, technical_milestone, validatio
   (106, 'Calotex Gasket R', 14, 'Material certified', 'Approved', true, NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- ─── Seed manufacturing orders (KW40 campaign, total quantity = 270) ──────────
+-- Seed manufacturing orders
 INSERT INTO manufacturing_orders (id, product_id, status, target_quantity, good_quantity, reject_quantity, qa_quantity, start_date, end_date, created_at, updated_at) VALUES
   (11004891, 101, 'in_production', 230, 180, 8, 12, NOW() - INTERVAL '7 days', NOW(), NOW(), NOW()),
   (11005007, 102, 'completed', 10, 10, 0, 0, NOW() - INTERVAL '5 days', NOW() - INTERVAL '1 day', NOW(), NOW()),
@@ -132,7 +142,7 @@ INSERT INTO manufacturing_orders (id, product_id, status, target_quantity, good_
   (6412, 106, 'pending', 1, 0, 0, 0, NOW(), NOW() + INTERVAL '7 days', NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- ─── Seed events ─────────────────────────────────────────────────────────────
+-- Seed events
 INSERT INTO events (id, title, type, event_date, created_at, updated_at) VALUES
   (1, 'Technical team meeting', 'technical', NOW() - INTERVAL '2 days', NOW(), NOW()),
   (2, 'Quality Control', 'quality', NOW() - INTERVAL '1 day', NOW(), NOW()),

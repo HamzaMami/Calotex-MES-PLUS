@@ -1,13 +1,57 @@
 import pool from "../../../config/db";
 import { Role, Permission } from "../../permissions/interfaces/permissions.interface";
 
+const ALLOWED_ROLE_COLUMNS = new Set(["name", "description"]);
+
 export const findAll = async (): Promise<Role[]> => {
-  const result = await pool.query("SELECT * FROM roles ORDER BY id ASC");
+  const query = `
+    SELECT
+      r.id,
+      r.name,
+      r.description,
+      r.is_system,
+      r.created_at,
+      r.updated_at,
+      COALESCE(
+        json_agg(
+          json_build_object('id', p.id, 'name', p.name, 'description', p.description)
+        ) FILTER (WHERE p.id IS NOT NULL),
+        '[]'
+      ) AS permissions
+    FROM roles r
+    LEFT JOIN role_permissions rp ON rp.role_id = r.id
+    LEFT JOIN permissions p ON p.id = rp.permission_id
+    GROUP BY r.id
+    ORDER BY r.id ASC
+  `;
+
+  const result = await pool.query(query);
   return result.rows;
 };
 
 export const findById = async (id: number): Promise<Role | null> => {
-  const result = await pool.query("SELECT * FROM roles WHERE id = $1", [id]);
+  const query = `
+    SELECT
+      r.id,
+      r.name,
+      r.description,
+      r.is_system,
+      r.created_at,
+      r.updated_at,
+      COALESCE(
+        json_agg(
+          json_build_object('id', p.id, 'name', p.name, 'description', p.description)
+        ) FILTER (WHERE p.id IS NOT NULL),
+        '[]'
+      ) AS permissions
+    FROM roles r
+    LEFT JOIN role_permissions rp ON rp.role_id = r.id
+    LEFT JOIN permissions p ON p.id = rp.permission_id
+    WHERE r.id = $1
+    GROUP BY r.id
+  `;
+
+  const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
 
@@ -25,24 +69,27 @@ export const create = async (
      VALUES ($1, $2) RETURNING *`,
     [name, description]
   );
-  return result.rows[0];
+  return { ...result.rows[0], permissions: [] };
 };
 
 export const update = async (
   id: number,
   fields: { name?: string; description?: string }
 ): Promise<Role | null> => {
-  const keys = Object.keys(fields);
-  if (keys.length === 0) return null;
+  const entries = Object.entries(fields).filter(([key]) =>
+    ALLOWED_ROLE_COLUMNS.has(key)
+  );
+  if (entries.length === 0) return null;
 
-  const setClause = keys.map((k, i) => `"${k}" = $${i + 2}`).join(", ");
-  const values = keys.map((k) => (fields as any)[k]);
+  const setClause = entries.map(([k], i) => `"${k}" = $${i + 2}`).join(", ");
+  const values = entries.map(([, v]) => v);
 
   const result = await pool.query(
-    `UPDATE roles SET ${setClause} WHERE id = $1 RETURNING *`,
+    `UPDATE roles SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING *`,
     [id, ...values]
   );
-  return result.rows[0] || null;
+  if (result.rowCount === 0) return null;
+  return findById(id);
 };
 
 export const remove = async (id: number): Promise<boolean> => {

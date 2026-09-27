@@ -1,8 +1,8 @@
 import * as productRepository from "../repositories/product.repository";
 import { Product } from "../interfaces/product.interface";
 
-export const getAllProducts = async (): Promise<Product[]> => {
-  return await productRepository.findAll();
+export const getAllProducts = async (page?: number, limit?: number) => {
+  return await productRepository.findAll(page, limit);
 };
 
 export const getProductById = async (id: number): Promise<Product | null> => {

@@ -1,7 +1,42 @@
 import pool from "../../../config/db";
 import { UserWithRole } from "../interfaces/users.interface";
 
-export const findAll = async (): Promise<UserWithRole[]> => {
+const ALLOWED_USER_COLUMNS = new Set(["name", "role_id", "status"]);
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const findAll = async (
+  page?: number,
+  limit?: number
+): Promise<UserWithRole[] | PaginatedResult<UserWithRole>> => {
+  if (page && limit) {
+    const offset = (page - 1) * limit;
+    const countResult = await pool.query("SELECT COUNT(*) FROM users");
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    const dataResult = await pool.query(
+      `SELECT u.id, u.name, u.email, u.status, u.role_id, u.created_at, u.updated_at,
+              r.name AS role_name
+       FROM users u
+       LEFT JOIN roles r ON r.id = u.role_id
+       ORDER BY u.created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    );
+
+    return {
+      items: dataResult.rows,
+      total,
+      page,
+      limit,
+    };
+  }
+
   const result = await pool.query(
     `SELECT u.id, u.name, u.email, u.status, u.role_id, u.created_at, u.updated_at,
             r.name AS role_name
@@ -40,14 +75,16 @@ export const updateUser = async (
   id: number,
   fields: { name?: string; role_id?: number | null; status?: string }
 ): Promise<UserWithRole | null> => {
-  const keys = Object.keys(fields);
-  if (keys.length === 0) return null;
+  const entries = Object.entries(fields).filter(([key]) =>
+    ALLOWED_USER_COLUMNS.has(key)
+  );
+  if (entries.length === 0) return null;
 
-  const setClause = keys.map((k, i) => `"${k}" = $${i + 2}`).join(", ");
-  const values = keys.map((k) => (fields as any)[k]);
+  const setClause = entries.map(([k], i) => `"${k}" = $${i + 2}`).join(", ");
+  const values = entries.map(([, v]) => v);
 
   const result = await pool.query(
-    `UPDATE users SET ${setClause} WHERE id = $1 RETURNING id`,
+    `UPDATE users SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING id`,
     [id, ...values]
   );
   if (result.rowCount === 0) return null;
@@ -56,7 +93,7 @@ export const updateUser = async (
 
 export const setStatus = async (id: number, status: string): Promise<boolean> => {
   const result = await pool.query(
-    "UPDATE users SET status = $2 WHERE id = $1 RETURNING id",
+    "UPDATE users SET status = $2, updated_at = NOW() WHERE id = $1 RETURNING id",
     [id, status]
   );
   return (result.rowCount ?? 0) > 0;
