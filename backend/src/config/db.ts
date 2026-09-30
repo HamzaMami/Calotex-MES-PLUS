@@ -23,6 +23,22 @@ pool.on("error", (err) => {
 /** Automatically seed permissions and assign full permissions to system roles if missing. */
 const ensureSystemPermissionsSeeded = async (client: any): Promise<void> => {
   try {
+    // 0. Ensure qa_controls table exists so constraint drops don't fail on fresh databases
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS qa_controls (
+        id SERIAL PRIMARY KEY,
+        product_code VARCHAR(100) NOT NULL,
+        year INTEGER NOT NULL,
+        calendar_week_kw INTEGER NOT NULL,
+        first_control_id VARCHAR(50) NOT NULL,
+        last_control_id VARCHAR(50) NOT NULL,
+        first_serial_number VARCHAR(50) NOT NULL,
+        last_serial_number VARCHAR(50) NOT NULL,
+        created_by INTEGER,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
     // Drop restrictive old SN check constraints on qa_controls if any exist
     await client.query(`
       ALTER TABLE qa_controls DROP CONSTRAINT IF EXISTS qa_controls_first_serial_number_check;
