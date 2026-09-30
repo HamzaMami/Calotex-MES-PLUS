@@ -95,17 +95,18 @@ class DashboardMetrics {
       (total, plan) => total + plan.quantity,
     );
 
-    int exportProduced = 0;
+    // Sum all QA passed items across orders and completed export plans
+    int totalPassedQaItems = 0;
+    for (final o in metricOrders) {
+      totalPassedQaItems += (o.goodQuantity > o.qaQuantity ? o.goodQuantity : o.qaQuantity);
+    }
     for (final plan in currentExportPlans) {
       if (plan.status == 'completed') {
-        exportProduced += plan.quantity;
-      } else if (plan.status == 'in_production') {
-        // Active plan in production contributes partial progress towards export total
-        exportProduced += (plan.quantity > 0 ? (plan.quantity * 0.5).round().clamp(1, plan.quantity) : 0);
+        totalPassedQaItems += plan.quantity;
       }
     }
 
-    final produced = exportTarget > 0 ? exportProduced : (good + qa);
+    final produced = totalPassedQaItems > 0 ? totalPassedQaItems : (good + qa);
     final target = exportTarget > 0
         ? exportTarget
         : (currentOrders.isNotEmpty ? manufacturingTarget : 0);

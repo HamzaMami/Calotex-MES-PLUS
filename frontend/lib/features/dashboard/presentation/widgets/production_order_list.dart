@@ -60,7 +60,7 @@ class ProductionOrderList extends StatefulWidget {
     required this.target,
     this.exportPlans = const [],
     this.canEditStatus = false,
-    this.autoScroll = true, // Restored auto-scroll to true by default
+    this.autoScroll = true,
     this.onStatusChanged = _ignoreStatusChange,
     this.onExportPlanStatusChanged = _ignoreExportPlanStatusChange,
   });
@@ -148,7 +148,7 @@ class _ProductionOrderListState extends State<ProductionOrderList> {
           children: [
             const Flexible(child: Text('Production Orders', style: AppTheme.heading3, overflow: TextOverflow.ellipsis)),
             const SizedBox(width: 8),
-            // Summary Metric Pills wrapped in Flexible to prevent overflow
+            // Summary Metric Pills
             Flexible(
               child: Wrap(
                 spacing: 6,
@@ -460,10 +460,6 @@ class _EnterpriseOrderCardState extends State<_EnterpriseOrderCard> {
                     'Produced: ${widget.producedQty} / ${widget.order.targetQuantity}',
                     style: AppTheme.bodySmall.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 11.5),
                   ),
-                ),
-                Text(
-                  'Reject: ${widget.order.rejectQuantity}',
-                  style: AppTheme.bodySmall.copyWith(color: AppTheme.accentRed, fontWeight: FontWeight.w600, fontSize: 11.5),
                 ),
               ],
             ),
