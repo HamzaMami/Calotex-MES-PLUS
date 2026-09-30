@@ -21,12 +21,20 @@ pool.on("error", (err) => {
   console.error("[db] Unexpected error on idle PostgreSQL client:", err);
 });
 
-/** Automatically initialize database schema and seed data on startup. */
+/** Automatically initialize database schema and apply migration patches on startup. */
 const ensureDatabaseInitialized = async (client: any): Promise<void> => {
   try {
     await client.query(schemaSql);
+
+    // Migration patches for existing tables created prior to schema updates
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_token VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS token_expiry TIMESTAMP;
+    `);
+
     // eslint-disable-next-line no-console
-    console.log("[db] Database schema and seed data initialized successfully");
+    console.log("[db] Database schema and migration patches applied successfully");
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("[db] Error initializing database schema:", err);
