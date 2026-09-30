@@ -6,4 +6,7 @@ abstract class DashboardRepository {
   
   /// Update the approval status of a specific product
   Future<void> updateProductApproval(int productId, bool finalApproval);
+
+  Future<void> updateProductionOrderStatus(int orderId, String status);
+  Future<void> updateExportPlanStatus(int planId, String status);
 }

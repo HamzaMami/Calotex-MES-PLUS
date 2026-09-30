@@ -82,6 +82,12 @@ export const env = {
       .map((origin) => origin.trim())
       .filter(Boolean),
   },
+
+  supabase: {
+    url: optional("SUPABASE_URL", ""),
+    serviceRoleKey: optional("SUPABASE_SERVICE_ROLE_KEY", ""),
+    bucket: optional("SUPABASE_STORAGE_BUCKET", "product-files"),
+  },
 } as const;
 
 export type Env = typeof env;

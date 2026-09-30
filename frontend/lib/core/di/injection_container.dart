@@ -21,6 +21,12 @@ import '../../features/admin/data/datasources/admin_remote_datasource.dart';
 import '../../features/admin/data/repositories/admin_repository.dart';
 import '../../features/admin/presentation/bloc/admin_bloc.dart';
 
+// Export planning feature
+import '../../features/export_planning/data/datasources/export_planning_remote_datasource.dart';
+import '../../features/export_planning/data/repositories/export_planning_repository_impl.dart';
+import '../../features/export_planning/domain/repositories/export_planning_repository.dart';
+import '../../features/export_planning/presentation/bloc/export_planning_bloc.dart';
+
 final sl = GetIt.instance;
 
 /// Initialize all dependencies (Services, Data Sources, Repositories, BLoCs).
@@ -45,6 +51,10 @@ Future<void> initDependencies() async {
     () => AdminRemoteDataSource(httpClient: sl<HttpClient>()),
   );
 
+  sl.registerLazySingleton<ExportPlanningRemoteDataSource>(
+    () => ExportPlanningRemoteDataSourceImpl(httpClient: sl<HttpClient>()),
+  );
+
   // ── 3. Repositories ───────────────────────────────────────────────────
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -65,6 +75,12 @@ Future<void> initDependencies() async {
     ),
   );
 
+  sl.registerLazySingleton<ExportPlanningRepository>(
+    () => ExportPlanningRepositoryImpl(
+      remoteDataSource: sl<ExportPlanningRemoteDataSource>(),
+    ),
+  );
+
   // ── 4. BLoCs ──────────────────────────────────────────────────────────
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(authRepository: sl<AuthRepository>()),
@@ -76,5 +92,9 @@ Future<void> initDependencies() async {
 
   sl.registerFactory<AdminBloc>(
     () => AdminBloc(adminRepository: sl<AdminRepository>()),
+  );
+
+  sl.registerFactory<ExportPlanningBloc>(
+    () => ExportPlanningBloc(repository: sl<ExportPlanningRepository>()),
   );
 }

@@ -23,6 +23,12 @@ pool.on("error", (err) => {
 /** Automatically seed permissions and assign full permissions to system roles if missing. */
 const ensureSystemPermissionsSeeded = async (client: any): Promise<void> => {
   try {
+    // Drop restrictive old SN check constraints on qa_controls if any exist
+    await client.query(`
+      ALTER TABLE qa_controls DROP CONSTRAINT IF EXISTS qa_controls_first_serial_number_check;
+      ALTER TABLE qa_controls DROP CONSTRAINT IF EXISTS qa_controls_last_serial_number_check;
+    `);
+
     // 1. Ensure permissions table has all required permissions
     await client.query(`
       INSERT INTO permissions (name, description) VALUES
@@ -58,54 +64,44 @@ const ensureSystemPermissionsSeeded = async (client: any): Promise<void> => {
       ON CONFLICT (name) DO NOTHING;
     `);
 
-    // 2. Ensure system roles exist
+    // 2. Ensure system and custom roles exist
     await client.query(`
       INSERT INTO roles (name, description, is_system) VALUES
-        ('admin', 'Administrator', TRUE),
-        ('manager', 'Manager', TRUE),
-        ('operator', 'Operator', TRUE)
+        ('Admin', 'Administrator', TRUE),
+        ('Calotex Project owner', 'Calotex Project Owner', TRUE),
+        ('Calotex Technical Diractor', 'Calotex Technical Director', TRUE),
+        ('CTX-1 production manager', 'CTX-1 Production Manager', FALSE),
+        ('CTX-1 technical team manager', 'CTX-1 Technical Team Manager', FALSE),
+        ('Engineer', 'Engineer', FALSE),
+        ('Line manager', 'Line Manager', FALSE),
+        ('QA Technician', 'QA Technician', FALSE),
+        ('Winkler Client', 'Winkler Client', FALSE),
+        ('Direct Client', 'Direct Client', FALSE),
+        ('Sales manager', 'Sales Manager', FALSE),
+        ('Inventory manager', 'Inventory Manager', FALSE)
       ON CONFLICT (name) DO NOTHING;
     `);
 
-    // 3. Grant ALL permissions to the 'admin' system role
+    // 3. Grant ALL permissions to system roles ('Admin', 'Calotex Project owner', 'Calotex Technical Diractor')
     await client.query(`
       INSERT INTO role_permissions (role_id, permission_id)
       SELECT r.id, p.id
       FROM roles r, permissions p
-      WHERE r.name = 'admin'
+      WHERE r.name IN ('Admin', 'Calotex Project owner', 'Calotex Technical Diractor')
       ON CONFLICT DO NOTHING;
     `);
 
-    // 4. Grant Manager permissions
+    // 4. Grant QA Technician permissions (dashboard, products, manufacturing, inventory, events read/create/update)
     await client.query(`
       INSERT INTO role_permissions (role_id, permission_id)
       SELECT r.id, p.id
       FROM roles r, permissions p
-      WHERE r.name = 'manager'
+      WHERE r.name = 'QA Technician'
         AND p.name IN (
           'dashboard:read',
-          'users:read', 'users:create', 'users:update',
-          'roles:read',
-          'permissions:read',
-          'products:read', 'products:create', 'products:update',
-          'manufacturing:read', 'manufacturing:create', 'manufacturing:update',
-          'inventory:read', 'inventory:create', 'inventory:update',
-          'events:read', 'events:create', 'events:update'
-        )
-      ON CONFLICT DO NOTHING;
-    `);
-
-    // 5. Grant Operator permissions
-    await client.query(`
-      INSERT INTO role_permissions (role_id, permission_id)
-      SELECT r.id, p.id
-      FROM roles r, permissions p
-      WHERE r.name = 'operator'
-        AND p.name IN (
-          'dashboard:read',
-          'products:read',
+          'products:read', 'products:update',
           'manufacturing:read', 'manufacturing:update',
-          'inventory:read', 'inventory:update',
+          'inventory:read',
           'events:read'
         )
       ON CONFLICT DO NOTHING;

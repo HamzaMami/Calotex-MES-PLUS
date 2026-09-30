@@ -9,9 +9,9 @@ class DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final metrics = data != null ? DashboardMetrics.from(data!) : null;
-    final productName = metrics?.productName ?? 'KV 30';
-    final today = metrics?.today ?? _defaultToday();
+    final currentKWInfo = DashboardMetrics.getISOWeekAndYear(DateTime.now());
+    final workWeek = 'KW ${currentKWInfo['kw']}';
+    final today = _defaultToday();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -21,7 +21,7 @@ class DashboardHeader extends StatelessWidget {
             'CALOTEX-1 PERFORMANCE DASHBOARD',
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 28,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
               color: AppTheme.textPrimary,
               letterSpacing: 1.2,
@@ -33,9 +33,9 @@ class DashboardHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              productName,
+              workWeek,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 21,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
               ),
@@ -43,7 +43,7 @@ class DashboardHeader extends StatelessWidget {
             Text(
               today,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 21,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
               ),

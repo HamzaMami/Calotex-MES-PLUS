@@ -43,9 +43,11 @@ class _RolesPageState extends State<RolesPage> {
         children: [
           CalotexSidebar(
             activeRoute: '/roles',
+            userRole: userRole,
             onNavItemTap: (route) {
               if (route == '/logout') {
                 context.read<AuthBloc>().add(const LogoutRequested());
+                Navigator.pushReplacementNamed(context, '/login');
                 return;
               }
               if (route != '/roles') Navigator.pushReplacementNamed(context, route);

@@ -8,7 +8,7 @@
 ### Frontend (Flutter)
 - Root path: `frontend/`
 - **Clean Architecture** implementation with three layers:
-  - **Core** - Shared infrastructure (HTTP client, constants, errors, services, dependency injection)
+  - **Core** - Shared infrastructure (HTTP client, constants, errors, services, dependency injection, stubs)
   - **Features** - Feature modules organized by domain (Auth, Dashboard, Admin)
   - **Main** - App entry point with `GetIt` dependency injection
 
@@ -60,13 +60,11 @@
 - Frontend `GetIt` service locator container in `frontend/lib/core/di/injection_container.dart`
 - Theme color consolidation across `LoginPage` and `RegisterPage` using `AppTheme`
 
-### ⚡ Code Optimization & Security Pass (Latest Pass)
-- **Async Error Wrapper**: Created `src/shared/utils/asyncHandler.ts` and wrapped all controllers, eliminating repetitive try/catch blocks and uncaught promise rejections.
-- **SQL Injection Prevention**: Added strict `ALLOWED_*_COLUMNS` Whitelist sets across `product`, `inventory`, `manufacturing_order`, `users`, and `event` repositories.
-- **Repository & Controller Pagination**: Added optional `page` and `limit` support to all repository `findAll()` functions, calculating totals and offset query execution.
-- **DB Performance Indexes**: Created `src/database/migrations/01_add_indexes.sql` with indexes on `users(email)`, `users(role_id)`, `events(event_date)`, `manufacturing_orders(product_id)`, and `inventory(sku)`.
-- **Frontend Dependency Injection**: Configured `GetIt` in `frontend/lib/core/di/injection_container.dart` for clean singleton and factory registration, updating `main.dart`.
-- **UI Theme Standardization**: Refactored `LoginPage` and `RegisterPage` to consume `AppTheme` properties directly instead of inline hardcoded hex colors.
+### 🧹 Cleaned & Maintained (Latest Maintenance Pass)
+- **Repository Cleanup**: Removed unreferenced duplicate SQL schemas (`backend/src/config/schema.sql`).
+- **Transpiled Artifact Removal**: Cleaned up transpiled `.js`, `.js.map`, `.d.ts`, and `.d.ts.map` files out of `backend/scripts/` to maintain clean source control.
+- **Test File Cleanup**: Cleared unit/widget test files and platform runner test boilerplate across `frontend/test/`, `frontend/ios/RunnerTests/`, `frontend/macos/RunnerTests/`, and `Calotex Kpi Showcase/test/`.
+- **Database Reset**: Cleared all sample/dashboard data from PostgreSQL tables (`events`, `manufacturing_orders`, `products`) with `RESTART IDENTITY CASCADE`.
 
 ---
 
@@ -75,7 +73,7 @@
 1. **Routing Enhancement**: Adopt `go_router` for declarative routing with top-level Auth Guard redirects.
 2. **Environment Defines**: Move `baseUrl` in frontend to `--dart-define` / flavors (dev/staging/prod).
 3. **Validation Standardization**: Consolidate remaining Joi validation schemas into Zod.
-4. **Testing**: Add unit and integration tests for frontend BLoCs and backend Express endpoints.
+4. **Export Planning Feature**: Finalize requirements and implementation for Excel-based Export Planning with Calendar Week (KW) logic & strict RBAC authorization.
 
 ---
-*Last updated: Code Optimization & Security Pass Completed*
+*Last updated: Workspace Cleanup & Dashboard Data Reset Completed*

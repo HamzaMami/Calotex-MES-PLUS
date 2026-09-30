@@ -3,6 +3,11 @@ import { Product } from "../interfaces/product.interface";
 
 const ALLOWED_PRODUCT_COLUMNS = new Set([
   "name",
+  "product_code",
+  "assembly_pdf",
+  "product_photo",
+  "client_name",
+  "category",
   "lead_engineer_id",
   "technical_milestone",
   "validation_status",
@@ -53,17 +58,27 @@ export const create = async (
   productData: Omit<Product, "id" | "created_at" | "updated_at">
 ): Promise<Product> => {
   const {
+    product_code,
     name,
+    assembly_pdf,
+    product_photo,
+    client_name,
+    category,
     lead_engineer_id,
     technical_milestone,
     validation_status,
     final_approval,
   } = productData;
   const result = await pool.query(
-    `INSERT INTO products (name, lead_engineer_id, technical_milestone, validation_status, final_approval)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    `INSERT INTO products (product_code, name, assembly_pdf, product_photo, client_name, category, lead_engineer_id, technical_milestone, validation_status, final_approval)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
     [
+      product_code,
       name,
+      assembly_pdf,
+      product_photo,
+      client_name,
+      category,
       lead_engineer_id,
       technical_milestone,
       validation_status,

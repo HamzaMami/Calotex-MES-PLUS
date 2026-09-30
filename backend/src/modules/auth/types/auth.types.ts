@@ -3,6 +3,7 @@ export type JwtSecret = string;
 export type AuthRequest = {
   id: number;
   email: string;
+  avatar?: string | null;
   role: string;
 };
 

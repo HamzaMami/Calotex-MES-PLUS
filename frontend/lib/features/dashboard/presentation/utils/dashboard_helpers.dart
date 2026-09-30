@@ -23,10 +23,10 @@ extension RoleFormatting on String {
 
 extension VolumeSeries on List<ManufacturingOrderEntity> {
   List<double> toVolumeSeries() {
-    if (isEmpty) return const [130, 142, 148, 112];
+    if (isEmpty) return const [0, 0, 0, 0];
     final series = map((o) => (o.goodQuantity + o.qaQuantity).toDouble()).toList();
     while (series.length < 4) {
-      series.add(series.isEmpty ? 0 : series.last);
+      series.add(0);
     }
     return series.take(4).toList();
   }
@@ -42,10 +42,10 @@ class DashboardMetrics {
   final int finishedCompliance;
   final List<double> statusVals;
   final List<double> volume;
-  final double kv39Productivity;
-  final double kv38Productivity;
-  final double kv37Productivity;
-  final double kv36Productivity;
+  final List<double> productivityValues;
+  final List<String> productivityLabels;
+  final double monthlyProductivity;
+  final String productivityMonthLabel;
 
   const DashboardMetrics({
     required this.productName,
@@ -57,22 +57,49 @@ class DashboardMetrics {
     required this.finishedCompliance,
     required this.statusVals,
     required this.volume,
-    required this.kv39Productivity,
-    required this.kv38Productivity,
-    required this.kv37Productivity,
-    required this.kv36Productivity,
+    required this.productivityValues,
+    required this.productivityLabels,
+    required this.monthlyProductivity,
+    required this.productivityMonthLabel,
   });
 
   factory DashboardMetrics.from(DashboardDataEntity data) {
     final orders = data.manufacturingOrders;
-    var target = 0, good = 0, reject = 0, qa = 0;
-    for (final o in orders) {
-      target += o.targetQuantity;
-      good += o.goodQuantity;
+    final now = DateTime.now();
+    final currentWeek = getISOWeekAndYear(now);
+    final currentExportPlans = data.exportPlans
+        .where((plan) =>
+            plan.year == currentWeek['year'] &&
+            plan.calendarWeekKw == currentWeek['kw'])
+        .toList();
+    final currentMonday = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    final nextMonday = currentMonday.add(const Duration(days: 7));
+    final currentOrders = orders.where((order) {
+      final orderDate = order.startDate ?? order.endDate;
+      return orderDate != null &&
+          !orderDate.isBefore(currentMonday) &&
+          orderDate.isBefore(nextMonday);
+    }).toList();
+    final metricOrders = currentOrders;
+    var manufacturingTarget = 0, good = 0, reject = 0, qa = 0;
+    for (final o in metricOrders) {
+      manufacturingTarget += o.targetQuantity;
+      good += o.status == 'completed' ? o.targetQuantity : o.goodQuantity;
       reject += o.rejectQuantity;
       qa += o.qaQuantity;
     }
-    final produced = good + qa;
+    final completedExportQuantity = currentExportPlans
+        .where((plan) => plan.status == 'completed')
+        .fold<int>(0, (total, plan) => total + plan.quantity);
+    final produced = orders.isEmpty ? completedExportQuantity : good + qa;
+    final exportTarget = currentExportPlans.fold<int>(
+      0,
+      (total, plan) => total + plan.quantity,
+    );
+    final target = exportTarget > 0
+        ? exportTarget
+        : (currentOrders.isNotEmpty ? manufacturingTarget : 0);
     final exportPct = target > 0 ? (produced / target * 100).clamp(0, 100).round() : 0;
 
     final totalInspected = produced + reject;
@@ -87,21 +114,39 @@ class DashboardMetrics {
             .round()
         : 0;
 
-    final totalOrders = orders.length;
+    final totalOrders = metricOrders.length;
     final statusVals = totalOrders > 0
         ? [
-            orders.where((o) => o.status == 'in_production').length / totalOrders,
-            orders.where((o) => o.status == 'pending').length / totalOrders,
-            orders.where((o) => o.status == 'quality_control').length / totalOrders,
+            metricOrders.where((o) => o.status == 'in_production').length / totalOrders,
+            metricOrders.where((o) => o.status == 'pending').length / totalOrders,
+            metricOrders.where((o) => o.status == 'quality_control').length / totalOrders,
           ]
-        : const [0.85, 0.65, 0.45];
+        : const [0.0, 0.0, 0.0];
 
-    final now = DateTime.now();
     final dayStr = now.day.toString().padLeft(2, '0');
+    final currentKWInfo = getISOWeekAndYear(now);
+    final currentKW = currentKWInfo['kw']!;
     final today = '$dayStr ${monthName(now.month)} ${now.year}';
-    final productName = data.products.isNotEmpty ? data.products.first.name : 'KV 40';
+    final productName = data.products.isNotEmpty
+        ? data.products.first.name
+        : 'KW $currentKW';
 
-    final workshopProductivities = _computeWorkshopProductivities(orders);
+    final productivityData = _computeProductivitySeries(
+      data.productivityRecords,
+      orders,
+      now,
+    );
+    final monthlyRecords = data.productivityRecords
+        .where((record) =>
+            record.year == now.year &&
+            record.calendarWeekKw == now.month)
+        .toList();
+    final monthlyProductivity = monthlyRecords.isEmpty
+        ? _computeMonthlyProductivity(orders, now)
+        : monthlyRecords.fold<double>(
+                0, (sum, record) => sum + record.productivityPercentage) /
+            monthlyRecords.length /
+            100;
 
     return DashboardMetrics(
       productName: productName,
@@ -113,46 +158,118 @@ class DashboardMetrics {
       finishedCompliance: finishedCompliance,
       statusVals: statusVals,
       volume: orders.toVolumeSeries(),
-      kv39Productivity: workshopProductivities.kv39,
-      kv38Productivity: workshopProductivities.kv38,
-      kv37Productivity: workshopProductivities.kv37,
-      kv36Productivity: workshopProductivities.kv36,
+      productivityValues: productivityData.values,
+      productivityLabels: productivityData.labels,
+      monthlyProductivity: monthlyProductivity,
+      productivityMonthLabel: monthName(now.month),
     );
   }
 
-  static ({double kv39, double kv38, double kv37, double kv36}) _computeWorkshopProductivities(
+  /// Calculates ISO Calendar Week (KW) and Year for any date.
+  /// Guarantees Monday, Sept 28, 2026 = KW 40, Year 2026.
+  static Map<String, int> getISOWeekAndYear(DateTime date) {
+    final d = DateTime(date.year, date.month, date.day);
+    final day = d.weekday; // 1 = Monday, 7 = Sunday
+    final thursday = d.add(Duration(days: 4 - day));
+    final yearStart = DateTime(thursday.year, 1, 1);
+    final diffDays = thursday.difference(yearStart).inDays;
+    final weekNo = (diffDays / 7).floor() + 1;
+    return {'kw': weekNo, 'year': thursday.year};
+  }
+
+  /// Calculates real productivity data for the last 4 completed Calendar Weeks (KW)
+  /// prior to the current week (e.g. KW 39, KW 38, KW 37, KW 36 when current week is KW 40).
+  static ({List<double> values, List<String> labels}) _computeLast4WeeksProductivity(
     List<ManufacturingOrderEntity> orders,
+    DateTime referenceDate,
   ) {
-    if (orders.isEmpty) {
-      return (kv39: 0.88, kv38: 0.72, kv37: 0.55, kv36: 0.40);
-    }
+    final List<double> values = [];
+    final List<String> labels = [];
 
-    final workshops = <String, List<ManufacturingOrderEntity>>{
-      'kv39': [],
-      'kv38': [],
-      'kv37': [],
-      'kv36': [],
-    };
+    // Find the Monday of the current reference week
+    final currentWeekday = referenceDate.weekday;
+    final currentMonday = DateTime(
+      referenceDate.year,
+      referenceDate.month,
+      referenceDate.day,
+    ).subtract(Duration(days: currentWeekday - 1));
 
-    for (var i = 0; i < orders.length; i++) {
-      final key = workshops.keys.elementAt(i % workshops.length);
-      workshops[key]!.add(orders[i]);
-    }
+    // Iterate backwards for the last 4 completed weeks (weeks i = 1, 2, 3, 4 back)
+    for (int i = 1; i <= 4; i++) {
+      final weekMonday = currentMonday.subtract(Duration(days: i * 7));
+      final weekSunday = weekMonday.add(const Duration(days: 6, hours: 23, minutes: 59, seconds: 59));
 
-    double productivity(List<ManufacturingOrderEntity> list) {
-      var t = 0, p = 0;
-      for (final o in list) {
-        t += o.targetQuantity;
-        p += o.goodQuantity + o.qaQuantity;
+      final weekInfo = getISOWeekAndYear(weekMonday);
+      labels.add('KW ${weekInfo['kw']}');
+
+      // Filter orders belonging to this Calendar Week
+      final weekOrders = orders.where((order) {
+        final orderDate = order.startDate ?? order.endDate;
+        if (orderDate == null) return false;
+        return orderDate.isAfter(weekMonday.subtract(const Duration(seconds: 1))) &&
+            orderDate.isBefore(weekSunday.add(const Duration(seconds: 1)));
+      }).toList();
+
+      if (weekOrders.isEmpty) {
+        values.add(0.0);
+      } else {
+        var totalTarget = 0;
+        var totalProduced = 0;
+        for (final o in weekOrders) {
+          totalTarget += o.targetQuantity;
+          totalProduced += (o.goodQuantity + o.qaQuantity);
+        }
+        final productivity = totalTarget > 0
+            ? (totalProduced / totalTarget).clamp(0.0, 1.0)
+            : 0.0;
+        values.add(productivity);
       }
-      return t > 0 ? (p / t).clamp(0.0, 1.0) : 0.0;
     }
 
-    return (
-      kv39: productivity(workshops['kv39']!),
-      kv38: productivity(workshops['kv38']!),
-      kv37: productivity(workshops['kv37']!),
-      kv36: productivity(workshops['kv36']!),
-    );
+    return (values: values, labels: labels);
   }
+
+  static double _computeMonthlyProductivity(
+    List<ManufacturingOrderEntity> orders,
+    DateTime referenceDate,
+  ) {
+    final monthOrders = orders.where((order) {
+      final orderDate = order.startDate ?? order.endDate;
+      return orderDate != null &&
+          orderDate.year == referenceDate.year &&
+          orderDate.month == referenceDate.month;
+    });
+
+    var totalTarget = 0;
+    var totalProduced = 0;
+    for (final order in monthOrders) {
+      totalTarget += order.targetQuantity;
+      totalProduced += order.goodQuantity + order.qaQuantity;
+    }
+
+    return totalTarget > 0 ? totalProduced / totalTarget : 0.0;
+  }
+
+  static ({List<double> values, List<String> labels}) _computeProductivitySeries(
+    List<ProductivityRecordEntity> records,
+    List<ManufacturingOrderEntity> orders,
+    DateTime now,
+  ) {
+    if (records.isEmpty) return _computeLast4WeeksProductivity(orders, now);
+    final current = getISOWeekAndYear(now)['kw']!;
+    final selected = records.where((r) => r.year == now.year).toList()
+      ..sort((a, b) => b.calendarWeekKw.compareTo(a.calendarWeekKw));
+    final values = <double>[];
+    final labels = <String>[];
+    for (final record in selected.take(4)) {
+      values.add(record.productivityPercentage / 100);
+      labels.add('KW ${record.calendarWeekKw}');
+    }
+    while (values.length < 4) {
+      values.add(0);
+      labels.add('KW ${current - values.length + 1}');
+    }
+    return (values: values.reversed.toList(), labels: labels.reversed.toList());
+  }
+
 }

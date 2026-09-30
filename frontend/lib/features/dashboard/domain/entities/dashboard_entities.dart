@@ -1,5 +1,7 @@
 class ProductEntity {
   final int id;
+  final String productCode;
+  final String? productPhoto;
   final String name;
   final int? leadEngineerId;
   final String? technicalMilestone;
@@ -10,6 +12,8 @@ class ProductEntity {
 
   const ProductEntity({
     required this.id,
+    required this.productCode,
+    this.productPhoto,
     required this.name,
     this.leadEngineerId,
     this.technicalMilestone,
@@ -21,6 +25,8 @@ class ProductEntity {
 
   ProductEntity copyWith({
     int? id,
+    String? productCode,
+    String? productPhoto,
     String? name,
     int? leadEngineerId,
     String? technicalMilestone,
@@ -31,6 +37,8 @@ class ProductEntity {
   }) {
     return ProductEntity(
       id: id ?? this.id,
+      productCode: productCode ?? this.productCode,
+      productPhoto: productPhoto ?? this.productPhoto,
       name: name ?? this.name,
       leadEngineerId: leadEngineerId ?? this.leadEngineerId,
       technicalMilestone: technicalMilestone ?? this.technicalMilestone,
@@ -43,6 +51,9 @@ class ProductEntity {
 
   factory ProductEntity.fromJson(Map<String, dynamic> json) => ProductEntity(
         id: json['id'] as int,
+        productCode: json['product_code']?.toString() ??
+            'W0000-${(json['id'] as int).toString().padLeft(4, '0')}',
+        productPhoto: json['product_photo'] as String?,
         name: json['name'] as String,
         leadEngineerId: json['lead_engineer_id'] as int?,
         technicalMilestone: json['technical_milestone'] as String?,
@@ -54,6 +65,8 @@ class ProductEntity {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'product_code': productCode,
+        'product_photo': productPhoto,
         'name': name,
         'lead_engineer_id': leadEngineerId,
         'technical_milestone': technicalMilestone,
@@ -181,27 +194,71 @@ class EventEntity {
       };
 }
 
+class ExportPlanEntity {
+  final int id;
+  final int calendarWeekKw;
+  final int year;
+  final String? orderNumber;
+  final String productCode;
+  final int quantity;
+  final String destination;
+  final String status;
+
+  const ExportPlanEntity({
+    required this.id,
+    required this.calendarWeekKw,
+    required this.year,
+    this.orderNumber,
+    required this.productCode,
+    required this.quantity,
+    required this.destination,
+    this.status = 'pending',
+  });
+}
+
+class ProductivityRecordEntity {
+  final int calendarWeekKw;
+  final int year;
+  final double productivityPercentage;
+
+  const ProductivityRecordEntity({
+    required this.calendarWeekKw,
+    required this.year,
+    required this.productivityPercentage,
+  });
+}
+
 class DashboardDataEntity {
   final List<ProductEntity> products;
   final List<ManufacturingOrderEntity> manufacturingOrders;
   final List<EventEntity> events;
+  final List<ExportPlanEntity> exportPlans;
+  final List<ProductivityRecordEntity> productivityRecords;
 
   const DashboardDataEntity({
     required this.products,
     required this.manufacturingOrders,
     required this.events,
+    this.exportPlans = const [],
+    this.productivityRecords = const [],
   });
 
   DashboardDataEntity copyWith({
     List<ProductEntity>? products,
     List<ManufacturingOrderEntity>? manufacturingOrders,
     List<EventEntity>? events,
+    List<ExportPlanEntity>? exportPlans,
+    List<ProductivityRecordEntity>? productivityRecords,
   }) {
     return DashboardDataEntity(
       products: List<ProductEntity>.from(products ?? this.products),
       manufacturingOrders: List<ManufacturingOrderEntity>.from(
           manufacturingOrders ?? this.manufacturingOrders),
       events: List<EventEntity>.from(events ?? this.events),
+      exportPlans: List<ExportPlanEntity>.from(exportPlans ?? this.exportPlans),
+      productivityRecords: List<ProductivityRecordEntity>.from(
+        productivityRecords ?? this.productivityRecords,
+      ),
     );
   }
 }

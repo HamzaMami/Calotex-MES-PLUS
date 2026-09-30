@@ -20,6 +20,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterSubmitted>(_onRegisterSubmitted);
     on<LogoutRequested>(_onLogoutRequested);
     on<TokenRefreshRequested>(_onTokenRefreshRequested);
+    on<ProfileUpdated>(
+      (event, emit) => emit(Authenticated(user: event.user)),
+    );
   }
 
   /// Check if user is already logged in.

@@ -10,6 +10,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       : super(const DashboardInitial()) {
     on<FetchDashboardData>(_onFetchDashboardData);
     on<ToggleProductApproval>(_onToggleProductApproval);
+    on<UpdateProductionOrderStatus>(_onUpdateProductionOrderStatus);
+    on<UpdateExportPlanStatus>(_onUpdateExportPlanStatus);
   }
 
   Future<void> _onFetchDashboardData(
@@ -24,6 +26,36 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       emit(DashboardError(message: e.toString()));
     }
   }
+
+  Future<void> _onUpdateProductionOrderStatus(
+    UpdateProductionOrderStatus event,
+    Emitter<DashboardState> emit,
+  ) async {
+    if (state is! DashboardLoaded) return;
+
+    try {
+      await dashboardRepository.updateProductionOrderStatus(
+        event.orderId,
+        event.status,
+      );
+      add(const FetchDashboardData());
+    } catch (e) {
+      emit(DashboardError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateExportPlanStatus(
+      UpdateExportPlanStatus event,
+      Emitter<DashboardState> emit,
+    ) async {
+      if (state is! DashboardLoaded) return;
+      try {
+        await dashboardRepository.updateExportPlanStatus(event.planId, event.status);
+        add(const FetchDashboardData());
+      } catch (e) {
+        emit(DashboardError(message: e.toString()));
+      }
+    }
 
   Future<void> _onToggleProductApproval(
     ToggleProductApproval event,

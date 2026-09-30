@@ -28,7 +28,7 @@ class CalotexGauge extends StatelessWidget {
           style: AppTheme.heading3.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 21,
           ),
         ),
         const Spacer(),
@@ -72,7 +72,7 @@ class CalotexGauge extends StatelessWidget {
                           Text(
                             actual,
                             style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 30,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: 0.5,
@@ -82,7 +82,7 @@ class CalotexGauge extends StatelessWidget {
                           const Text(
                             'Actual',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Color(
                                   0xFFA0A0C0), // Brightened subtitle label
@@ -118,7 +118,7 @@ class CalotexGauge extends StatelessWidget {
                             target,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 13,
+                              fontSize: 16,
                               fontWeight:
                                   FontWeight.w800, // Fixed from .extrabold
                             ),
@@ -127,7 +127,7 @@ class CalotexGauge extends StatelessWidget {
                             'Target',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 10,
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -150,7 +150,7 @@ class CalotexGauge extends StatelessWidget {
               Text(
                 '0%',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: Colors
                       .white70, // Replaced muted '00' with visible white '0%'
@@ -159,7 +159,7 @@ class CalotexGauge extends StatelessWidget {
               Text(
                 '100%',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: Colors.white70,
                 ),
@@ -247,7 +247,7 @@ class CalotexHistogram extends StatelessWidget {
             style: AppTheme.heading3.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 21,
             ),
           ),
         ),
@@ -270,7 +270,7 @@ class CalotexHistogram extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 15,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -306,7 +306,7 @@ class CalotexHistogram extends StatelessWidget {
                           style: const TextStyle(
                             color: Color(0xFFC0C0DB), // Sharper grey-white
                             fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                            fontSize: 14,
                           ),
                           textAlign: TextAlign.center,
                         ),

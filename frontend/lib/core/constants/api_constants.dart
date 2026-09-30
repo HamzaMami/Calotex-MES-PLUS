@@ -14,6 +14,7 @@ class ApiConstants {
   static const String usersEndpoint = '/users';
   static const String rolesEndpoint = '/roles';
   static const String permissionsEndpoint = '/permissions';
+  static const String exportPlanningEndpoint = '/export-planning';
 
   // Request timeout duration in seconds
   static const int timeoutDuration = 30;

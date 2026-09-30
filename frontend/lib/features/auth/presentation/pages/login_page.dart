@@ -82,7 +82,9 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
           if (state is Authenticated) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            Navigator.of(context).pushReplacementNamed(
+              state.user.role == 'engineer' ? '/products' : '/home',
+            );
           }
         },
         child: Center(

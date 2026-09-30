@@ -6,28 +6,94 @@ class SidebarNavItem {
   final String label;
   final IconData icon;
   final String route;
+  final List<String> roles;
 
   const SidebarNavItem({
     required this.label,
     required this.icon,
     required this.route,
+    this.roles = const [],
   });
 }
 
 /// CALOTEX main navigation sidebar with logo, nav items, and support section.
 class CalotexSidebar extends StatelessWidget {
   final String activeRoute;
+  final String userRole;
   final ValueChanged<String>? onNavItemTap;
 
   static const List<SidebarNavItem> _mainItems = [
     SidebarNavItem(label: 'Dashboard',     icon: Icons.dashboard_rounded,          route: '/home'),
-    SidebarNavItem(label: 'Users',         icon: Icons.people_alt_outlined,         route: '/users'),
-    SidebarNavItem(label: 'Roles',         icon: Icons.admin_panel_settings_outlined, route: '/roles'),
-    SidebarNavItem(label: 'Inventory',     icon: Icons.inventory_2_outlined,        route: '/inventory'),
-    SidebarNavItem(label: 'Products',      icon: Icons.category_outlined,           route: '/products'),
+    SidebarNavItem(label: 'Users',         icon: Icons.people_alt_outlined,         route: '/users', roles: ['admin', 'calotex project owner', 'calotex technical diractor']),
+    SidebarNavItem(label: 'Roles',         icon: Icons.admin_panel_settings_outlined, route: '/roles', roles: ['admin', 'calotex project owner']),
+    SidebarNavItem(label: 'Inventory',     icon: Icons.inventory_2_outlined,        route: '/inventory', roles: ['admin', 'inventory manager', 'engineer', 'line manager', 'ctx-1 production manager', 'ctx1_production_manager']),
+    SidebarNavItem(label: 'Products',      icon: Icons.category_outlined,           route: '/products', roles: ['admin', 'engineer', 'calotex technical diractor']),
     SidebarNavItem(label: 'Drafts',        icon: Icons.edit_document,               route: '/drafts'),
     SidebarNavItem(label: 'Documents',     icon: Icons.description_outlined,        route: '/documents'),
-    SidebarNavItem(label: 'Manufacturing', icon: Icons.precision_manufacturing_outlined, route: '/manufacturing'),
+    SidebarNavItem(
+      label: 'Manufacturing',
+      icon: Icons.precision_manufacturing_outlined,
+      route: '/manufacturing',
+      roles: [
+        'admin',
+        'manager',
+        'operator',
+        'engineer',
+        'line manager',
+        'ctx-1 production manager',
+        'ctx1_production_manager',
+        'ctx-1 technical team manager',
+        'inventory manager',
+        'calotex project owner',
+        'calotex technical diractor'
+      ],
+    ),
+    SidebarNavItem(
+      label: 'QA Control',
+      icon: Icons.fact_check_outlined,
+      route: '/qa-control',
+      roles: [
+        'admin',
+        'qa technician',
+        'qa',
+        'qa_control_technician',
+        'engineer',
+        'line manager',
+        'ctx-1 production manager',
+        'ctx1_production_manager',
+        'calotex project owner',
+        'calotex technical diractor'
+      ],
+    ),
+    SidebarNavItem(
+      label: 'Productivity',
+      icon: Icons.trending_up_rounded,
+      route: '/productivity',
+      roles: [
+        'admin',
+        'manager',
+        'engineer',
+        'sales manager',
+        'line manager',
+        'ctx-1 production manager',
+        'ctx1_production_manager',
+        'calotex project owner',
+        'calotex technical diractor'
+      ],
+    ),
+    SidebarNavItem(
+      label: 'Export Planning',
+      icon: Icons.file_download_outlined,
+      route: '/export-planning',
+      roles: [
+        'admin',
+        'sales manager',
+        'ctx-1 production manager',
+        'ctx1_production_manager',
+        'calotex project owner',
+        'calotex technical diractor'
+      ],
+    ),
   ];
 
   static const List<SidebarNavItem> _supportItems = [
@@ -38,11 +104,14 @@ class CalotexSidebar extends StatelessWidget {
   const CalotexSidebar({
     super.key,
     required this.activeRoute,
+    this.userRole = '',
     this.onNavItemTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final normalizedUserRole = userRole.trim().toLowerCase();
+
     return Container(
       width: AppTheme.sidebarWidth,
       height: double.infinity,
@@ -77,7 +146,13 @@ class CalotexSidebar extends StatelessWidget {
           // ── GENERAL section ──────────────────────────────
           _sectionLabel('GENERAL'),
           const SizedBox(height: 6),
-          ..._mainItems.map((item) => _NavTile(
+          ..._mainItems.where((item) {
+            if (item.roles.isEmpty) return true;
+            return item.roles.any((r) {
+              final target = r.trim().toLowerCase();
+              return normalizedUserRole.contains(target) || target.contains(normalizedUserRole);
+            });
+          }).map((item) => _NavTile(
                 item: item,
                 isActive: activeRoute == item.route,
                 onTap: () => onNavItemTap?.call(item.route),

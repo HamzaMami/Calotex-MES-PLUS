@@ -44,7 +44,7 @@ class CalotexKpiCard extends StatelessWidget {
                 Text(
                   value,
                   style: AppTheme.heading2.copyWith(
-                    fontSize: isLarge ? 22 : 18,
+                    fontSize: isLarge ? 28 : 24,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -60,14 +60,20 @@ class CalotexKpiCard extends StatelessWidget {
                       trend!,
                       style: TextStyle(
                         color: color,
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   const SizedBox(height: 6),
                 ],
-                Text(title, style: AppTheme.bodySmall),
+                Text(
+                  title,
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -75,7 +81,7 @@ class CalotexKpiCard extends StatelessWidget {
           Icon(
             icon ?? Icons.bar_chart_rounded,
             color: color.withValues(alpha: 0.7),
-            size: isLarge ? 32 : 26,
+            size: isLarge ? 38 : 32,
           ),
         ],
       ),

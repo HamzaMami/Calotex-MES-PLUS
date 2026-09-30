@@ -16,6 +16,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
         products: model.products,
         manufacturingOrders: model.manufacturingOrders,
         events: model.events,
+        exportPlans: model.exportPlans,
+        productivityRecords:
+            List<ProductivityRecordEntity>.from(model.productivityRecords),
       );
     } on ServerException {
       return _fallbackDashboardData();
@@ -35,6 +38,28 @@ class DashboardRepositoryImpl implements DashboardRepository {
     }
   }
 
+  @override
+  Future<void> updateProductionOrderStatus(int orderId, String status) async {
+    try {
+      await remoteDataSource.updateProductionOrderStatus(orderId, status);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(message: 'Failed to update production order status');
+    }
+  }
+
+  @override
+  Future<void> updateExportPlanStatus(int planId, String status) async {
+      try {
+        await remoteDataSource.updateExportPlanStatus(planId, status);
+      } on ServerException {
+        rethrow;
+      } catch (e) {
+        throw ServerException(message: 'Failed to update order status');
+      }
+    }
+
   DashboardDataEntity _fallbackDashboardData() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -43,6 +68,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
       products: [
         ProductEntity(
           id: 101,
+          productCode: 'W0000-0101',
           name: 'Calotex Panel A1',
           leadEngineerId: 12,
           technicalMilestone: 'Prototype review',
@@ -53,6 +79,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
         ProductEntity(
           id: 102,
+          productCode: 'W0000-0102',
           name: 'Calotex Tube Pro',
           leadEngineerId: 8,
           technicalMilestone: 'Bench testing',
@@ -63,6 +90,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
         ProductEntity(
           id: 103,
+          productCode: 'W0000-0103',
           name: 'Calotex Valve X',
           leadEngineerId: 15,
           technicalMilestone: 'Design freeze',
@@ -73,6 +101,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
         ProductEntity(
           id: 104,
+          productCode: 'W0000-0104',
           name: 'Calotex Sensor M',
           leadEngineerId: 9,
           technicalMilestone: 'Calibration',
@@ -83,6 +112,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
         ProductEntity(
           id: 105,
+          productCode: 'W0000-0105',
           name: 'Calotex Bracket S',
           leadEngineerId: 11,
           technicalMilestone: 'Tooling ready',
@@ -93,6 +123,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
         ProductEntity(
           id: 106,
+          productCode: 'W0000-0106',
           name: 'Calotex Gasket R',
           leadEngineerId: 14,
           technicalMilestone: 'Material certified',

@@ -9,6 +9,7 @@ class CalotexGradientButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final double height;
+  final double fontSize;
 
   const CalotexGradientButton({
     super.key,
@@ -18,6 +19,7 @@ class CalotexGradientButton extends StatelessWidget {
     this.icon,
     this.width,
     this.height = 48,
+    this.fontSize = 15,
   });
 
   @override
@@ -39,14 +41,15 @@ class CalotexGradientButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
+            padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             ),
           ),
           child: isLoading
               ? const SizedBox(
-                  width: 20,
-                  height: 20,
+                  width: 18,
+                  height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -57,14 +60,14 @@ class CalotexGradientButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
+                      Icon(icon, color: Colors.white, size: 16),
+                      const SizedBox(width: 6),
                     ],
                     Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

@@ -8,6 +8,10 @@ abstract class DashboardRemoteDataSource {
 
   /// Update the approval status of a specific product.
   Future<void> updateProductApproval(int productId, bool finalApproval);
+
+  /// Update the manually controlled status of a production order.
+  Future<void> updateProductionOrderStatus(int orderId, String status);
+  Future<void> updateExportPlanStatus(int planId, String status);
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
@@ -53,4 +57,43 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       );
     }
   }
+
+  @override
+  Future<void> updateProductionOrderStatus(int orderId, String status) async {
+    try {
+      final response = await httpClient.patch(
+        '/manufacturing-orders/$orderId',
+        data: {'status': status},
+      );
+      if (response.statusCode != 200) {
+        throw ServerException(
+          message: response.data['message'] ?? 'Failed to update production order status',
+        );
+      }
+    } on DioException catch (e) {
+      throw ServerException(
+        message: e.response?.data['message'] ??
+            'Network error updating production order status',
+      );
+    }
+  }
+
+  @override
+  Future<void> updateExportPlanStatus(int planId, String status) async {
+      try {
+        final response = await httpClient.patch(
+          '/export-planning/$planId',
+          data: {'status': status},
+        );
+        if (response.statusCode != 200) {
+          throw ServerException(
+            message: response.data['message'] ?? 'Failed to update order status',
+          );
+        }
+      } on DioException catch (e) {
+        throw ServerException(
+          message: e.response?.data['message'] ?? 'Network error updating order status',
+        );
+      }
+    }
 }

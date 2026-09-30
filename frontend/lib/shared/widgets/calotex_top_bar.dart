@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 class CalotexTopBar extends StatelessWidget {
   final String userName;
   final String userRole;
+  final String? avatar;
   final String welcomeMessage;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onProfileTap;
@@ -15,6 +16,7 @@ class CalotexTopBar extends StatelessWidget {
     super.key,
     required this.userName,
     this.userRole = '',
+    this.avatar,
     this.welcomeMessage = 'Here are your daily updates.',
     this.onNotificationTap,
     this.onProfileTap,
@@ -120,9 +122,49 @@ class CalotexTopBar extends StatelessWidget {
           const SizedBox(width: 16),
 
           // ── User avatar + name ────────────────────────
-          GestureDetector(
-            onTap: onProfileTap,
-            child: Row(
+          _ProfileHoverMenu(
+            userName: userName,
+            userRole: userRole,
+            avatar: avatar,
+            onEdit: onProfileTap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHoverMenu extends StatefulWidget {
+  final String userName;
+  final String userRole;
+  final String? avatar;
+  final VoidCallback? onEdit;
+
+  const _ProfileHoverMenu({
+    required this.userName,
+    required this.userRole,
+    required this.avatar,
+    required this.onEdit,
+  });
+
+  @override
+  State<_ProfileHoverMenu> createState() => _ProfileHoverMenuState();
+}
+
+class _ProfileHoverMenuState extends State<_ProfileHoverMenu> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: SizedBox(
+        width: 190,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Row(
               children: [
                 Container(
                   width: 38,
@@ -135,38 +177,92 @@ class CalotexTopBar extends StatelessWidget {
                       width: 2,
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                  child: widget.avatar == null
+                      ? Center(
+                          child: Text(
+                            widget.userName.isNotEmpty
+                                ? widget.userName[0].toUpperCase()
+                                : 'U',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        )
+                      : ClipOval(
+                          child: Image.network(
+                            widget.avatar!,
+                            width: 38,
+                            height: 38,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.userName,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (widget.userRole.isNotEmpty)
+                        Text(
+                          widget.userRole,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.bodySmall.copyWith(fontSize: 11),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (_hovered && widget.onEdit != null)
+              Positioned(
+                top: 46,
+                right: 0,
+                child: Material(
+                  color: AppTheme.bgCard,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  elevation: 8,
+                  child: InkWell(
+                    onTap: widget.onEdit,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_outlined,
+                              size: 17, color: AppTheme.accentCyan),
+                          SizedBox(width: 8),
+                          Text(
+                            'Edit profile',
+                            style: TextStyle(color: AppTheme.textPrimary),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (userRole.isNotEmpty)
-                      Text(userRole, style: AppTheme.bodySmall.copyWith(fontSize: 11)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+          ],
+        ),
       ),
     );
   }

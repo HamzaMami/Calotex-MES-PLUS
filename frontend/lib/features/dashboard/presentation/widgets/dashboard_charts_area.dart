@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:calotex_app/features/dashboard/domain/entities/dashboard_entities.dart';
+import '../../domain/entities/dashboard_entities.dart';
 import '../../../../shared/theme/app_theme.dart';
 import '../widgets/calotex_charts.dart';
+import 'monthly_productivity_panel.dart';
 import 'product_assembly_panel.dart';
 import 'production_order_list.dart';
 
@@ -11,10 +12,9 @@ class DashboardChartsArea extends StatelessWidget {
   final List<double> volume;
   final int produced;
   final int target;
-  final double kv39Productivity;
-  final double kv38Productivity;
-  final double kv37Productivity;
-  final double kv36Productivity;
+  final double monthlyProductivity;
+  final String productivityMonthLabel;
+  final List<ExportPlanEntity> exportPlans;
 
   const DashboardChartsArea({
     super.key,
@@ -23,10 +23,9 @@ class DashboardChartsArea extends StatelessWidget {
     required this.volume,
     required this.produced,
     required this.target,
-    required this.kv39Productivity,
-    required this.kv38Productivity,
-    required this.kv37Productivity,
-    required this.kv36Productivity,
+    required this.monthlyProductivity,
+    required this.productivityMonthLabel,
+    required this.exportPlans,
   });
 
   @override
@@ -69,6 +68,19 @@ class DashboardChartsArea extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
+                flex: 4,
+                child: Container(
+                  decoration: AppTheme.cardDecoration(),
+                  padding: const EdgeInsets.all(16),
+                  child: MonthlyProductivityPanel(
+                    monthLabel: productivityMonthLabel,
+                    productivity: monthlyProductivity,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 5,
                 child: Container(
                   decoration: AppTheme.cardDecoration(),
                   padding: const EdgeInsets.all(16),
@@ -77,30 +89,8 @@ class DashboardChartsArea extends StatelessWidget {
                     target: '$target',
                     progress: target > 0
                         ? (produced / target).clamp(0.0, 1.0)
-                        : 0.75,
+                        : 0.0,
                     caption: 'Export Progress This Week',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Container(
-                  decoration: AppTheme.cardDecoration(),
-                  padding: const EdgeInsets.all(16),
-                  child: CalotexHistogram(
-                    title: 'Productivity',
-                    values: [
-                      kv39Productivity,
-                      kv38Productivity,
-                      kv37Productivity,
-                      kv36Productivity,
-                    ],
-                    labels: const [
-                      'KV 39',
-                      'KV 38',
-                      'KV 37',
-                      'KV 36',
-                    ],
                   ),
                 ),
               ),
@@ -115,6 +105,7 @@ class DashboardChartsArea extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: ProductionOrderList(
               orders: data.manufacturingOrders,
+              exportPlans: exportPlans,
               produced: produced,
               target: target,
             ),

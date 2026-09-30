@@ -80,9 +80,18 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 INSERT INTO roles (name, description, is_system) VALUES
-  ('admin', 'Administrator', TRUE),
-  ('manager', 'Manager', TRUE),
-  ('operator', 'Operator', TRUE)
+  ('Admin', 'Administrator', TRUE),
+  ('Calotex Project owner', 'Calotex Project Owner', TRUE),
+  ('Calotex Technical Diractor', 'Calotex Technical Director', TRUE),
+  ('CTX-1 production manager', 'CTX-1 Production Manager', FALSE),
+  ('CTX-1 technical team manager', 'CTX-1 Technical Team Manager', FALSE),
+  ('Engineer', 'Engineer', FALSE),
+  ('Line manager', 'Line Manager', FALSE),
+  ('QA Technician', 'QA Technician', FALSE),
+  ('Winkler Client', 'Winkler Client', FALSE),
+  ('Direct Client', 'Direct Client', FALSE),
+  ('Sales manager', 'Sales Manager', FALSE),
+  ('Inventory manager', 'Inventory Manager', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO permissions (name, description) VALUES
@@ -117,9 +126,9 @@ INSERT INTO permissions (name, description) VALUES
   ('events:delete', 'Delete events')
 ON CONFLICT (name) DO NOTHING;
 
--- Seed system role permissions
+-- Seed system role permissions for Admin
 INSERT INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'admin'
+SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'Admin'
 ON CONFLICT DO NOTHING;
 
 -- Seed products

@@ -1,40 +1,39 @@
-# Node
+# Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
+backend/node_modules/
+frontend/node_modules/
+frontend/.dart_tool/
+frontend/.pub/
 
-# TypeScript
-dist/
-build/
+# Build Outputs
+backend/dist/
+frontend/build/
 *.tsbuildinfo
 
-# Flutter / Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.fvm/
-
-# Env
+# Environment Variables & Secrets
 .env
-.env.*
+backend/.env
+frontend/.env
+*.env
 
-# VSCode
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-logs/
+# Logs & Diagnostics
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 *.log
-
-# Misc
+logs/
 coverage/
 
-# Project scripts (exclude from push)
-scripts/
-backend/scripts/
+# IDE & Editor Files
+.vscode/
+.idea/
+*.iml
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Agent / Workspace Artifacts
+.kilo/
+.artifacts/

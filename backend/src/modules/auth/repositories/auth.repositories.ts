@@ -13,6 +13,7 @@ export const findByEmail = async (email: string): Promise<DbUser | undefined> =>
       users.id,
       users.name,
       users.email,
+      users.avatar,
       users.password,
       users.status,
       roles.name as role
@@ -32,6 +33,7 @@ export const findById = async (id: number): Promise<DbUser | undefined> => {
       users.id,
       users.name,
       users.email,
+      users.avatar,
       users.password,
       users.status,
       users.registration_token,
@@ -55,6 +57,7 @@ export const findByRegistrationToken = async (
       users.id,
       users.name,
       users.email,
+      users.avatar,
       users.password,
       users.status,
       users.registration_token,

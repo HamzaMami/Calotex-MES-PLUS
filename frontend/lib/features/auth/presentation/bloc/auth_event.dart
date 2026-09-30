@@ -1,3 +1,5 @@
+import '../../domain/entities/user_entity.dart';
+
 /// Base class for all authentication events.
 sealed class AuthEvent {
   const AuthEvent();
@@ -37,4 +39,10 @@ final class LogoutRequested extends AuthEvent {
 /// Refresh the access token.
 final class TokenRefreshRequested extends AuthEvent {
   const TokenRefreshRequested();
+}
+
+final class ProfileUpdated extends AuthEvent {
+  final UserEntity user;
+
+  const ProfileUpdated(this.user);
 }

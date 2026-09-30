@@ -11,15 +11,11 @@ const EdgeInsets _kpiCardPadding = EdgeInsets.symmetric(
 class DashboardKpiRow extends StatelessWidget {
   final String exportProgressTitle;
   final String exportProgressValue;
-  final String semiComplianceValue;
-  final String finishedComplianceValue;
 
   const DashboardKpiRow({
     super.key,
     required this.exportProgressTitle,
     required this.exportProgressValue,
-    required this.semiComplianceValue,
-    required this.finishedComplianceValue,
   });
 
   @override
@@ -27,72 +23,29 @@ class DashboardKpiRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth > 720) {
-          return Row(
-            children: [
-              Expanded(
-                child: CalotexKpiCard(
-                  title: exportProgressTitle,
-                  value: exportProgressValue,
-                  color: AppTheme.accentGreen,
-                  icon: Icons.bar_chart_rounded,
-                  height: _kpiCardHeight,
-                  padding: _kpiCardPadding,
-                ),
+          return Center(
+            child: SizedBox(
+              width: constraints.maxWidth / 2,
+              child: CalotexKpiCard(
+                title: exportProgressTitle,
+                value: exportProgressValue,
+                color: AppTheme.accentGreen,
+                icon: Icons.bar_chart_rounded,
+                height: _kpiCardHeight,
+                padding: _kpiCardPadding,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: CalotexKpiCard(
-                  title: 'Compliance Semi-finished',
-                  value: semiComplianceValue,
-                  color: AppTheme.accentBlue,
-                  icon: Icons.bar_chart_rounded,
-                  height: _kpiCardHeight,
-                  padding: _kpiCardPadding,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: CalotexKpiCard(
-                  title: 'Compliance Finished',
-                  value: finishedComplianceValue,
-                  color: AppTheme.accentCyan,
-                  icon: Icons.bar_chart_rounded,
-                  height: _kpiCardHeight,
-                  padding: _kpiCardPadding,
-                ),
-              ),
-            ],
+            ),
           );
         }
-        return Column(
-          children: [
-            CalotexKpiCard(
-              title: exportProgressTitle,
-              value: exportProgressValue,
-              color: AppTheme.accentGreen,
-              icon: Icons.bar_chart_rounded,
-              height: _kpiCardHeight,
-              padding: _kpiCardPadding,
-            ),
-            const SizedBox(height: 16),
-            CalotexKpiCard(
-              title: 'Compliance Semi-finished',
-              value: semiComplianceValue,
-              color: AppTheme.accentBlue,
-              icon: Icons.bar_chart_rounded,
-              height: _kpiCardHeight,
-              padding: _kpiCardPadding,
-            ),
-            const SizedBox(height: 16),
-            CalotexKpiCard(
-              title: 'Compliance Finished',
-              value: finishedComplianceValue,
-              color: AppTheme.accentCyan,
-              icon: Icons.bar_chart_rounded,
-              height: _kpiCardHeight,
-              padding: _kpiCardPadding,
-            ),
-          ],
+        return Center(
+          child: CalotexKpiCard(
+            title: exportProgressTitle,
+            value: exportProgressValue,
+            color: AppTheme.accentGreen,
+            icon: Icons.bar_chart_rounded,
+            height: _kpiCardHeight,
+            padding: _kpiCardPadding,
+          ),
         );
       },
     );

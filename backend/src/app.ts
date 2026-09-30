@@ -12,6 +12,10 @@ import usersRoutes from "./modules/users/routes/users.routes";
 import rolesRoutes from "./modules/roles/routes/roles.routes";
 import permissionsRoutes from "./modules/permissions/routes/permissions.routes";
 import dashboardRoutes from "./modules/dashboard/routes/dashboard.routes";
+import exportPlanningRoutes from "./modules/export_planning/routes/export_planning.routes";
+import productivityRoutes from "./modules/productivity/routes/productivity.routes";
+import profileRoutes from "./modules/profile/routes/profile.routes";
+import qaControlRoutes from "./modules/qa_control/routes/qa_control.routes";
 
 const app = express();
 
@@ -27,8 +31,8 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 // Body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "3mb" }));
+app.use(express.urlencoded({ extended: true, limit: "3mb" }));
 
 // Rate limiting to mitigate brute-force / credential-stuffing on auth routes.
 const authLimiter = rateLimit({
@@ -52,6 +56,12 @@ app.use("/api/users", usersRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/export-planning", exportPlanningRoutes);
+// Keep the original URL as a compatibility alias while clients migrate.
+app.use("/api/export-plan", exportPlanningRoutes);
+app.use("/api/productivity", productivityRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/qa-control", qaControlRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
