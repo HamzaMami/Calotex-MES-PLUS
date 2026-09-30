@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(255),
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255),
+  avatar VARCHAR(255),
   status VARCHAR(50) DEFAULT 'active',
   role_id INTEGER REFERENCES roles(id),
   registration_token VARCHAR(255),
