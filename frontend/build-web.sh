@@ -12,7 +12,8 @@ fi
 # Add Flutter to PATH
 export PATH="$PWD/flutter/bin:$PATH"
 
-# Configure Flutter for web
+# Configure Flutter
+flutter config --enable-web
 flutter config --no-analytics
 flutter precache --web
 
