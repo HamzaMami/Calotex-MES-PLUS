@@ -481,21 +481,11 @@ class _EnterpriseQaCardState extends State<_EnterpriseQaCard> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              // Structured Data Pills
+                              // Structured Serial Number Range Tag (Control ID removed)
                               Flexible(
-                                child: Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  children: [
-                                    _DataTag(
-                                      label: 'Control ID',
-                                      value: '${control.firstControl}${control.lastControl.isNotEmpty && control.lastControl != control.firstControl ? ' - ${control.lastControl}' : ''}',
-                                    ),
-                                    _DataTag(
-                                      label: 'Serial Range',
-                                      value: '${control.firstSerial}${control.lastSerial.isNotEmpty && control.lastSerial != control.firstSerial ? ' to ${control.lastSerial}' : ''}',
-                                    ),
-                                  ],
+                                child: _DataTag(
+                                  label: 'Serial Range',
+                                  value: '${control.firstSerial}${control.lastSerial.isNotEmpty && control.lastSerial != control.firstSerial ? ' to ${control.lastSerial}' : ''}',
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -578,48 +568,29 @@ class _AddControlDialog extends StatefulWidget {
 
 class _AddControlDialogState extends State<_AddControlDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _firstControl = TextEditingController();
-  final _lastControl = TextEditingController();
   final _firstSerial = TextEditingController();
   final _lastSerial = TextEditingController();
 
   @override
   void dispose() {
-    _firstControl.dispose();
-    _lastControl.dispose();
     _firstSerial.dispose();
     _lastSerial.dispose();
     super.dispose();
   }
 
-  String? _control(String? value) => value == null || value.isEmpty || RegExp(r'^\d{5}$').hasMatch(value) ? null : 'Use exactly 5 digits';
   String? _serial(String? value) => value == null || value.isEmpty || RegExp(r'^W\d{9}$').hasMatch(value) ? null : 'Use W followed by 9 digits (e.g. W000000001)';
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppTheme.bgCard,
-      title: const Text('Add QA Control History', style: TextStyle(color: AppTheme.textPrimary)),
+      title: const Text('Add QA Inspection Range', style: TextStyle(color: AppTheme.textPrimary)),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 360),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextFormField(
-                controller: _firstControl,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: AppTheme.inputDecoration(hint: 'First control ID (5 digits)'),
-                validator: _control,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _lastControl,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: AppTheme.inputDecoration(hint: 'Last control ID (optional)'),
-                validator: _control,
-              ),
-              const SizedBox(height: 12),
               TextFormField(
                 controller: _firstSerial,
                 style: const TextStyle(color: AppTheme.textPrimary),
@@ -655,8 +626,8 @@ class _AddControlDialogState extends State<_AddControlDialog> {
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   Navigator.pop(context, {
-                    'first_control_id': _firstControl.text.trim(),
-                    'last_control_id': _lastControl.text.trim(),
+                    'first_control_id': '1',
+                    'last_control_id': '',
                     'first_serial_number': _firstSerial.text.trim(),
                     'last_serial_number': _lastSerial.text.trim(),
                   });

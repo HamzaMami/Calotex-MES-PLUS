@@ -22,7 +22,7 @@ export const findWeeklyProducts = async (
         WHERE year = $1 AND calendar_week_kw = $2
         GROUP BY product_code
        UNION ALL
-       SELECT p.product_code, MIN(mo.id::text) AS order_number,
+       SELECT COALESCE(p.product_code, p.name) AS product_code, MIN(mo.id::text) AS order_number,
               SUM(mo.target_quantity)::int AS quantity
          FROM manufacturing_orders mo
          JOIN products p ON p.id = mo.product_id
@@ -32,7 +32,7 @@ export const findWeeklyProducts = async (
           OR (mo.start_date IS NULL AND mo.end_date IS NOT NULL AND
               mo.end_date >= $3 AND mo.end_date < $4)
         )
-        GROUP BY p.product_code
+        GROUP BY COALESCE(p.product_code, p.name)
      ),
      grouped_products AS (
        SELECT product_code, MIN(order_number) AS order_number,
@@ -59,6 +59,10 @@ export const create = async (
   data: Omit<QaControl, "id" | "created_at" | "created_by">,
   createdBy: number | null,
 ): Promise<QaControl> => {
+  // Ensure control IDs have safe fallback defaults
+  const firstControlId = data.first_control_id || '1';
+  const lastControlId = data.last_control_id || '';
+
   // 1. Fetch planned quantity for this product in this year/week to validate fencepost range
   const products = await findWeeklyProducts(data.year, data.calendar_week_kw);
   const product = products.find((p) => p.product_code === data.product_code);
@@ -97,14 +101,14 @@ export const create = async (
      RETURNING *`,
     [
       data.product_code, data.year, data.calendar_week_kw,
-      data.first_control_id, data.last_control_id,
+      firstControlId, lastControlId,
       data.first_serial_number, data.last_serial_number, createdBy,
     ],
   );
 
   const createdControl = result.rows[0];
 
-  // 2. Check if total inspected quantity meets or exceeds planned quantity. If so, automatically update production order status to 'completed'.
+  // 2. Automatically update production order & export plan status and quantities on QA Control pass
   try {
     const updatedProducts = await findWeeklyProducts(data.year, data.calendar_week_kw);
     const currentProduct = updatedProducts.find((p) => p.product_code === data.product_code);
@@ -122,24 +126,31 @@ export const create = async (
         }
       }
 
-      if (totalInspected >= currentProduct.quantity && currentProduct.quantity > 0) {
-        await pool.query(
-          `UPDATE manufacturing_orders mo
-              SET status = 'completed', updated_at = NOW()
-             FROM products p
-            WHERE mo.product_id = p.id AND p.product_code = $1`,
-          [data.product_code]
-        );
-        await pool.query(
-          `UPDATE export_plans
-              SET status = 'completed', updated_at = NOW()
-            WHERE product_code = $1 AND year = $2 AND calendar_week_kw = $3`,
-          [data.product_code, data.year, data.calendar_week_kw]
-        );
-      }
+      // Update good_quantity and qa_quantity on matching manufacturing orders
+      await pool.query(
+        `UPDATE manufacturing_orders mo
+            SET good_quantity = GREATEST(mo.good_quantity, $2),
+                qa_quantity = GREATEST(mo.qa_quantity, $2),
+                status = CASE WHEN $2 >= mo.target_quantity THEN 'completed' ELSE 'in_production' END,
+                updated_at = NOW()
+           FROM products p
+          WHERE mo.product_id = p.id
+            AND (p.product_code = $1 OR p.name = $1 OR mo.id::text = $1)`,
+        [data.product_code, totalInspected]
+      );
+
+      // Update export plans
+      await pool.query(
+        `UPDATE export_plans
+            SET status = CASE WHEN $3 >= quantity THEN 'completed' ELSE 'in_production' END,
+                updated_at = NOW()
+          WHERE (product_code = $1 OR order_number = $1)
+            AND year = $2 AND calendar_week_kw = $4`,
+        [data.product_code, data.year, totalInspected, data.calendar_week_kw]
+      );
     }
   } catch (err) {
-    // Non-blocking status update catch
+    // eslint-disable-next-line no-console
     console.error("[qa_control] Failed to auto-update order status on pass:", err);
   }
 
