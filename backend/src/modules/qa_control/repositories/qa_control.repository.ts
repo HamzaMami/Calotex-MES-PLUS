@@ -63,6 +63,11 @@ export const create = async (
   const firstControlId = data.first_control_id || '1';
   const lastControlId = data.last_control_id || '';
 
+  // If last serial number is omitted or empty, default to first serial number (1 single item)
+  if (!data.last_serial_number || data.last_serial_number.trim() === '') {
+    data.last_serial_number = data.first_serial_number;
+  }
+
   // 1. Fetch planned quantity for this product in this year/week to validate fencepost range
   const products = await findWeeklyProducts(data.year, data.calendar_week_kw);
   const product = products.find((p) => p.product_code === data.product_code);
@@ -72,7 +77,6 @@ export const create = async (
     if (firstMatch) {
       const startId = parseInt(firstMatch[0], 10);
       const plannedQty = product.quantity;
-      // Fencepost fix: Upper bound = (Start ID + Planned Quantity) - 1
       const maxEndId = (startId + plannedQty) - 1;
 
       if (data.last_serial_number) {
@@ -85,10 +89,6 @@ export const create = async (
             );
           }
         }
-      } else {
-        const prefix = data.first_serial_number.replace(/\d+/, '');
-        const padLength = firstMatch[0].length;
-        data.last_serial_number = `${prefix}${maxEndId.toString().padStart(padLength, '0')}`;
       }
     }
   }

@@ -89,14 +89,23 @@ class DashboardMetrics {
       reject += o.rejectQuantity;
       qa += o.qaQuantity;
     }
-    final completedExportQuantity = currentExportPlans
-        .where((plan) => plan.status == 'completed')
-        .fold<int>(0, (total, plan) => total + plan.quantity);
-    final produced = orders.isEmpty ? completedExportQuantity : good + qa;
+    
     final exportTarget = currentExportPlans.fold<int>(
       0,
       (total, plan) => total + plan.quantity,
     );
+
+    int exportProduced = 0;
+    for (final plan in currentExportPlans) {
+      if (plan.status == 'completed') {
+        exportProduced += plan.quantity;
+      } else if (plan.status == 'in_production') {
+        // Active plan in production contributes partial progress towards export total
+        exportProduced += (plan.quantity > 0 ? (plan.quantity * 0.5).round().clamp(1, plan.quantity) : 0);
+      }
+    }
+
+    final produced = exportTarget > 0 ? exportProduced : (good + qa);
     final target = exportTarget > 0
         ? exportTarget
         : (currentOrders.isNotEmpty ? manufacturingTarget : 0);

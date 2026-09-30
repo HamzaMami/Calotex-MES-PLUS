@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
+  product_code VARCHAR(100),
   name VARCHAR(255) NOT NULL,
   lead_engineer_id INTEGER,
   technical_milestone TEXT,
@@ -179,14 +180,14 @@ INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'Admin'
 ON CONFLICT DO NOTHING;
 
--- Seed products
-INSERT INTO products (id, name, lead_engineer_id, technical_milestone, validation_status, final_approval, created_at, updated_at) VALUES
-  (101, 'Calotex Panel A1', 12, 'Prototype review', 'In progress', false, NOW(), NOW()),
-  (102, 'Calotex Tube Pro', 8, 'Bench testing', 'QA pending', true, NOW(), NOW()),
-  (103, 'Calotex Valve X', 15, 'Design freeze', 'Approved', true, NOW(), NOW()),
-  (104, 'Calotex Sensor M', 9, 'Calibration', 'In progress', false, NOW(), NOW()),
-  (105, 'Calotex Bracket S', 11, 'Tooling ready', 'Pending', false, NOW(), NOW()),
-  (106, 'Calotex Gasket R', 14, 'Material certified', 'Approved', true, NOW(), NOW())
+-- Seed products with explicit product_code
+INSERT INTO products (id, product_code, name, lead_engineer_id, technical_milestone, validation_status, final_approval, created_at, updated_at) VALUES
+  (101, 'W0000-0101', 'Calotex Panel A1', 12, 'Prototype review', 'In progress', false, NOW(), NOW()),
+  (102, 'W0000-0102', 'Calotex Tube Pro', 8, 'Bench testing', 'QA pending', true, NOW(), NOW()),
+  (103, 'W0000-0103', 'Calotex Valve X', 15, 'Design freeze', 'Approved', true, NOW(), NOW()),
+  (104, 'W0000-0104', 'Calotex Sensor M', 9, 'Calibration', 'In progress', false, NOW(), NOW()),
+  (105, 'W0000-0105', 'Calotex Bracket S', 11, 'Tooling ready', 'Pending', false, NOW(), NOW()),
+  (106, 'W0000-0106', 'Calotex Gasket R', 14, 'Material certified', 'Approved', true, NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Seed manufacturing orders
